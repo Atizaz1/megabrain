@@ -678,7 +678,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   if (_formKey.currentState.validate() && _radioValue1 >= 0) 
                                   {
 
-                                     register(emailController.text,passwordController.text,confirmPasswordController.text, courseController.text,nicknameController.text,_radioValue1, fullnameController.text );
+                                     register(emailController.text,passwordController.text,confirmPasswordController.text, nicknameController.text,fullnameController.text,_radioValue1, courseController.text );
                                     _formKey.currentState.save();
 
                                     _formKey.currentState.reset();

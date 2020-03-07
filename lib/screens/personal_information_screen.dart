@@ -992,7 +992,7 @@ class _PersonalInformationState extends State<PersonalInformation>
                                   && passwordController.text.length >=8 && confirmPasswordController.text.length>=8 && _dropDownMenuCities !=null) 
                                   {
 
-                                     updateUserProfile(emailController.text,passwordController.text,confirmPasswordController.text, courseController.text,nicknameController.text,_radioValue1, fullnameController.text );
+                                     updateUserProfile(emailController.text,passwordController.text,confirmPasswordController.text, nicknameController.text,fullnameController.text,_radioValue1, courseController.text );
 
                                     _formKey.currentState.save();
 
