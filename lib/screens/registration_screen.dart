@@ -238,8 +238,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   
   sendMail(receipientEmail) async
   {
-    String username = 'atizaz.ahmad07@gmail.com'; //Sender Email;
-    String password = 'AaZ_D6590'; //Sender Email's password;
+    String username = ''; //Sender Email;
+    String password = ''; //Sender Email's password;
 
     final smtpServer = gmail(username, password); 
 
