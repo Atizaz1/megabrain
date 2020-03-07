@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:megabrain/screens/password_recovery.dart';
+import 'package:megabrain/screens/personal_information_screen.dart';
 import 'package:megabrain/screens/welcome_screen.dart';
 import 'package:megabrain/screens/login_screen.dart';
 import 'package:megabrain/screens/registration_screen.dart';
@@ -12,7 +14,7 @@ class MegaBrain extends StatelessWidget {
     return MaterialApp(
       theme: ThemeData.dark().copyWith(
         textTheme: TextTheme(
-          body1: TextStyle(color: Colors.black54),
+          body1: TextStyle(color: Colors.grey[100]),
         ),
       ),
       initialRoute: 'welcome_screen',
@@ -20,7 +22,9 @@ class MegaBrain extends StatelessWidget {
         'welcome_screen'         : (context) => WelcomeScreen(),
         'login_screen'           : (context) => LoginScreen(), 
         'registration_screen'    : (context) => RegistrationScreen(), 
-        'home_screen'            : (context) => HomeScreen(), 
+        'home_screen'            : (context) => HomeScreen(),
+        'password_recovery'      : (context) => PasswordVerify(),
+        'personal_information'   : (context) => PersonalInformation(),
       },
     );
   }

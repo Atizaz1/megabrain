@@ -12,15 +12,20 @@ import 'package:mailer/mailer.dart';
 import 'package:mailer/smtp_server.dart';
 import 'dart:math';
 import 'package:megabrain/screens/verify_email.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:megabrain/screens/login_screen.dart';
 
 
-class RegistrationScreen extends StatefulWidget {
+
+class PersonalInformation extends StatefulWidget 
+{
   @override
-  _RegistrationScreenState createState() => _RegistrationScreenState();
+  _PersonalInformationState createState() => _PersonalInformationState();
 }
 
-class _RegistrationScreenState extends State<RegistrationScreen> {
-  
+class _PersonalInformationState extends State<PersonalInformation> 
+{
+
   bool temp = false;
 
   List _states;
@@ -68,7 +73,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   var jsonData;
 
   var response;
-
+ 
   var jsonCityData;
 
   var cityResponse;
@@ -84,6 +89,140 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String verifyToken;
  
   File tmpFile;
+
+  String userId;
+
+  SharedPreferences sharedPreferences;
+
+  fetchUserData() async
+  {
+    setState(() 
+    {
+      _isLoading = true;
+    });
+
+
+    print(sharedPreferences.get('token'));
+
+    String token = sharedPreferences.get('token');
+
+    Map<String,String> authorizationHeaders=
+    {
+      'Content-Type'  : 'application/json',
+      'Accept'        : 'application/json',
+      'Authorization' : 'Bearer $token',
+    };
+
+    response = await http.post("http://megabrain-enem.com.br/API/api/auth/me",headers: authorizationHeaders);
+
+    jsonData = convert.jsonDecode(response.body);
+
+    if(response.statusCode == 200)
+    {
+
+      setState(() 
+      {
+        _isLoading = false;
+      });
+
+      _user = jsonData;
+
+      print(_user['userId']);
+
+    }
+    else
+    {
+      setState(()
+      {
+        _isLoading = false;
+      });
+      
+      print(jsonData);
+                                        
+    }
+  }
+
+  setUserData()
+  {
+    emailController.text    = _user['email'];
+
+    nicknameController.text = _user['nickname'];
+
+    fullnameController.text = _user['fullname'];
+
+    bornDateController.text = _user['borndate'];
+
+    courseController.text   = _user['course'];
+
+    if(_user['sex']  == 'Male')
+    {
+      _handleRadio(0);
+    }
+    else if(_user['sex']  == 'Female')
+    {
+      _handleRadio(1);
+    }
+
+    if(_user['state'] != null)
+    {
+      int index = -1;
+
+      for(var i=0; i<_dropDownMenuStates.length; i++ )
+      {  
+        String mainString = _dropDownMenuStates[i].child.toString();
+
+        String substr = mainString.substring(6,mainString.length-2);
+        
+        if(substr == _user['state'])
+        {
+          index = i;
+          break;
+        }
+
+      }
+      
+      if(index >= 0)
+      {        
+        _selectedState = _dropDownMenuStates[index].value;
+      }
+    }
+  }
+ 
+  chooseImage() 
+  {
+    setState(() 
+    {
+      file = ImagePicker.pickImage(source: ImageSource.gallery);
+    });
+  }
+
+  Widget showImage() {
+    return FutureBuilder<File>(
+      future: file,
+      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
+        if (snapshot.connectionState == ConnectionState.done &&
+            null != snapshot.data) {
+          tmpFile = snapshot.data;
+          // base64Image = base64Encode(snapshot.data.readAsBytesSync());
+          return Image.file(
+            snapshot.data,
+            width: 300,
+            height: 300,
+          );
+        } else if (null != snapshot.error) {
+          return const Text(
+            'Error Picking Image',
+            textAlign: TextAlign.center,
+          );
+        } else {
+          return const Text(
+            'No Image Selected',
+            textAlign: TextAlign.center,
+          );
+        }
+      },
+    );
+  }
 
   List<DropdownMenuItem<String>> buildAndGetStateMenuItems(List _states) 
   {
@@ -129,6 +268,156 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     {
       _selectedCity = selectedCity;
     });
+  }
+ 
+
+  Future<Null> _selectDate(BuildContext context) async 
+  {
+    final DateTime picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: DateTime(1970, 1),
+        lastDate: DateTime(2200));
+    if (picked != null && picked != selectedDate)
+      setState(() 
+      {
+        selectedDate = picked;
+        bornDateController.text = dateFormatter.format(selectedDate);
+      });
+  }
+
+  final _formKey = GlobalKey<FormState>();
+
+  var _user;
+
+  updateUserProfile(String email, String password,String confirm_password, String nickname, String fullname,int sex,String course) async
+  {
+    setState(() 
+    {
+      _isLoading = true;
+    });
+
+    String gender;
+
+    String fileName;  
+
+    if(sex == 0)
+    {
+      gender = 'Male';
+    }
+    else if(sex == 1)
+    {
+      gender = 'Female';
+    }
+    
+    Map<String,String> data = 
+    {
+      'userId'                   : _user['userId'].toString(),
+      'nickname'                 : nickname,
+      'fullname'                 : fullname,
+      'email'                    : email,
+      'password'                 : 'null',
+      'password_confirmation'    : 'null',
+      'borndate'                 : bornDateController.text,
+      'sex'                      : gender,
+      'photo'                    : 'null',
+      'course'                   : course,
+      'state'                    : _selectedState,
+      'city'                     : 'null',
+    };
+
+    if( (password.isNotEmpty && confirm_password.isNotEmpty) && (password == confirm_password) )
+    {
+      data['password']              = password;
+      data['password_confirmation'] = confirm_password;
+    }
+
+    if(_dropDownMenuCities != null)
+    {
+      data['city'] = _selectedCity;
+    }
+
+    if (tmpFile != null)
+    { 
+      base64Image   = base64Encode(tmpFile.readAsBytesSync());
+
+      fileName      = tmpFile.path.split("/").last;
+
+      data['photo'] = base64Image+','+fileName;
+    }
+
+    //print(data);
+
+    //print(bornDateController.text);
+
+    String token = sharedPreferences.get('token');
+
+    Map<String,String> authorizationHeaders=
+    {
+      'Content-Type'  : 'application/x-www-form-urlencoded',
+      'Authorization' : 'Bearer $token',
+    };
+
+    // data = convert.jsonEncode(data);
+
+    response = await http.post("http://megabrain-enem.com.br/API/api/auth/updateUserProfile", headers: authorizationHeaders,body:data);
+
+    jsonData = convert.jsonDecode(response.body);
+
+    if(response.statusCode == 200)
+    {
+
+      setState(() 
+      {
+        _isLoading = false;
+      });
+
+      _user = jsonData['user'];
+
+      print(_user['userId']);
+
+      Fluttertoast.showToast(msg: 'You profile has been updated successfully.');
+
+    }
+    else
+    {
+      setState(()
+      {
+        _isLoading = false;
+      });
+      
+      print(jsonData);
+
+      Fluttertoast.showToast(msg: 'Something Went Wrong. Please check your profile details or internet connectivity and try again.');
+                                        
+    }
+  }
+
+  static Color fromHex(String hexString) 
+  {
+    final buffer = StringBuffer();
+    if (hexString.length == 6 || hexString.length == 7) buffer.write('ff');
+    buffer.write(hexString.replaceFirst('#', ''));
+    return Color(int.parse(buffer.toString(), radix: 16));
+  }
+
+  final Color color = fromHex('#754D8B');
+
+  checkLoginStatus() async
+  {
+    sharedPreferences = await SharedPreferences.getInstance();
+
+    if(sharedPreferences.get('token') == null)
+    {
+      Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
+    }
+  }
+
+  @override
+  void initState()
+  {
+    super.initState();
+    checkLoginAndFetchDetails();
   }
 
   fetchStateList() async
@@ -226,219 +515,243 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         
     }
   }
-
-  static final Random _random = Random.secure();
-
-  String createCryptoRandomString([int length = 32]) 
-  {
-      var values = List<int>.generate(length, (i) => _random.nextInt(256));
-
-      return base64Url.encode(values);
-  }
   
-  sendMail(receipientEmail) async
+
+  void checkLoginAndFetchDetails() async
   {
-    String username = 'atizaz.ahmad07@gmail.com'; //Sender Email;
-    String password = 'AaZ_D6590'; //Sender Email's password;
-
-    final smtpServer = gmail(username, password); 
-
-    //print(verifyToken);
-    
-    final message = Message()
-      ..from = Address(username)
-      ..recipients.add(receipientEmail)
-      ..subject = 'Verify Account' 
-      ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 
-
-    try 
-    {
-      final sendReport = await send(message, smtpServer);
-
-      print('Message sent: ' + sendReport.toString()); 
-    } 
-    on MailerException catch (e) 
-    {
-      print('Message not sent. \n'+ e.toString()); 
-    }
-  }
- 
-  chooseImage() 
-  {
-    setState(() 
-    {
-      file = ImagePicker.pickImage(source: ImageSource.gallery);
-    });
-  }
-
-  Widget showImage() {
-    return FutureBuilder<File>(
-      future: file,
-      builder: (BuildContext context, AsyncSnapshot<File> snapshot) {
-        if (snapshot.connectionState == ConnectionState.done &&
-            null != snapshot.data) {
-          tmpFile = snapshot.data;
-          // base64Image = base64Encode(snapshot.data.readAsBytesSync());
-          return Image.file(
-            snapshot.data,
-            width: 300,
-            height: 300,
-          );
-        } else if (null != snapshot.error) {
-          return const Text(
-            'Error Picking Image',
-            textAlign: TextAlign.center,
-          );
-        } else {
-          return const Text(
-            'No Image Selected',
-            textAlign: TextAlign.center,
-          );
-        }
-      },
-    );
-  }
-
-
- void fetchDetails() async
- {
+    await checkLoginStatus();
+    await fetchUserData();
     await fetchStateList();
- }
-
-  @override
-  void initState() 
-  {
-    super.initState();
-    fetchDetails();
-  } 
-
-  Future<Null> _selectDate(BuildContext context) async 
-  {
-    final DateTime picked = await showDatePicker(
-        context: context,
-        initialDate: selectedDate,
-        firstDate: DateTime(1970, 1),
-        lastDate: DateTime(2200));
-    if (picked != null && picked != selectedDate)
-      setState(() 
-      {
-        selectedDate = picked;
-        bornDateController.text = dateFormatter.format(selectedDate);
-      });
-  }
-
-  final _formKey = GlobalKey<FormState>();
-
-  var _user;
-
-  register(String email, String password,String confirm_password, String nickname, String fullname,int sex,String course) async
-  {
-    setState(() 
-    {
-      _isLoading = true;
-    });
-
-    String gender;
-
-    String fileName;  
-
-    if(sex == 0)
-    {
-      gender = 'Male';
-    }
-    else if(sex == 1)
-    {
-      gender = 'Female';
-    }
-    
-    verifyToken = createCryptoRandomString(6);
-
-    Map data = 
-    {
-      'nickname'                 : nickname,
-      'fullname'                 : fullname,
-      'email'                    : email,
-      'password'                 : password,
-      'password_confirmation'    : confirm_password,
-      'borndate'                 : bornDateController.text,
-      'sex'                      : gender,
-      'photo'                    : 'null',
-      'course'                   : course,
-      'verifyToken'              : verifyToken,
-      'isVerify'                 : '0',
-      'state'                    : _selectedState,
-      'city'                     : 'null',
-    };
-
-    if (tmpFile != null)
-    { 
-      base64Image   = base64Encode(tmpFile.readAsBytesSync());
-
-      fileName      = tmpFile.path.split("/").last;
-
-      data['photo'] = base64Image+','+fileName;
-    }
-
-    if(_dropDownMenuCities != null)
-    {
-      data['city'] = _selectedCity;
-    }
-
-    //print(data);
-
-    //print(bornDateController.text);
-
-    response = await http.post("http://megabrain-enem.com.br/API/api/auth/register",body:data);
-
-    jsonData = convert.jsonDecode(response.body);
-
-    if(response.statusCode == 200)
-    {
-
-      setState(() 
-      {
-        _isLoading = false;
-      });
-
-      sendMail(emailController.text);
-
-      _user = jsonData['user'];
-
-      print(_user['userId']);
-
-      Fluttertoast.showToast(msg: 'You have registered successfully. Verify your account for use.');
-
-    }
-    else
-    {
-      setState(()
-      {
-        _isLoading = false;
-      });
-      
-      print(jsonData);
-
-      Fluttertoast.showToast(msg: 'Something Went Wrong. Please check your registration details or internet connectivity and try again.');
-                                        
-    }
+    setUserData();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        decoration: BoxDecoration(
-            image: DecorationImage(
-                image: AssetImage("images/loginbackground.jpg"), fit:BoxFit.cover
+    return Scaffold(
+      appBar: AppBar(
+        // leading: Icon(Icons.menu),
+        title: Text('Home',
+        style: TextStyle(
+          color: Colors.white,
+        ),
+        ),
+        backgroundColor: Colors.orange,
+        actions: <Widget>
+        [ 
+          PopupMenuButton<int>(
+            color: Colors.white,
+          itemBuilder: (context) => [
+                PopupMenuItem(
+                  value: 1,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>
+                  [ 
+                    Icon(
+                      Icons.power,
+                      color:Colors.black
+                    ),
+                    FlatButton(
+                      onPressed: ()
+                      {
+                          sharedPreferences.clear();
+                          sharedPreferences.commit();
+                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
+                      },
+                      child: Text(
+                        "LogOut",
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),              
+                      ),
+                    ),
+                  ]
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>
+                  [ 
+                    Icon(
+                      Icons.book,
+                      color:Colors.black
+                    ),
+                    FlatButton(
+                      onPressed: ()
+                      {
+                          
+                      },
+                      child: Text(
+                        "Personal Information",
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),              
+                      ),
+                    ),
+                  ]
+                  ),
+                ),
+              ],
+          icon: Icon(Icons.more_vert),
+          offset: Offset(0, 100),
+        )
+
+        ],
+      ),
+      drawer: Drawer(
+          child: Container(
+            color: Colors.white,
+            child: ListView(
+            padding: EdgeInsets.zero,
+            children: <Widget>[
+              DrawerHeader(
+                child: Text('Drawer Header'),
+                decoration: BoxDecoration(
+                  image:DecorationImage(
+                    image: AssetImage('images/applogo2.png'),
+                    fit:BoxFit.contain
+                    ),
+                  color: Colors.white,
                 ),
               ),
-        child: Scaffold(
-          backgroundColor: Colors.transparent,
-          appBar: AppBar(
-            elevation: 0,
-            backgroundColor: Colors.transparent,
-            centerTitle: true,
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/biol.jpg'),
+                title: Text('Biology',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/chem.jpg'),
+                title: Text('Chemistry',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/math.jpg'),
+                title: Text('Maths',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/physics.jpg'),
+                title: Text('Physics',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/library_add_check.png'),
+                title: Text('Remember',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/config.png'),
+                title: Text('Configuration',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+              ListTile(
+                contentPadding: EdgeInsets.zero,
+                leading: Image.asset('images/news.png',
+                width: 55.0,),
+                title: Text('News',
+                style: TextStyle(
+                  color: Colors.black,
+                  fontSize: 20.0,
+                ),
+                ),
+                onTap: () {
+
+                  Navigator.pop(context);
+                },
+              ),
+              Divider(
+                height: 1.0,
+                color: Colors.grey,
+              ),
+            ],
+        ),
           ),
-          body: Builder(
+      ),
+           body: Builder(
             builder: (context) => Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: _isLoading ? Center(
@@ -471,7 +784,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         SizedBox(height: 10.0,),
                         Center(
                           child: Text(
-                          'REGISTER',
+                          'Personal Information',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                           color:Colors.white,
@@ -675,10 +988,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               child: MaterialButton(
                                 onPressed: () 
                                 {
-                                  if (_formKey.currentState.validate() && _radioValue1 >= 0) 
+                                  if (_formKey.currentState.validate() && _radioValue1 >= 0 && passwordController.text == confirmPasswordController.text
+                                  && passwordController.text.length >=8 && confirmPasswordController.text.length>=8 && _dropDownMenuCities !=null) 
                                   {
 
-                                     register(emailController.text,passwordController.text,confirmPasswordController.text, courseController.text,nicknameController.text,_radioValue1, fullnameController.text );
+                                     updateUserProfile(emailController.text,passwordController.text,confirmPasswordController.text, courseController.text,nicknameController.text,_radioValue1, fullnameController.text );
+
                                     _formKey.currentState.save();
 
                                     _formKey.currentState.reset();
@@ -693,12 +1008,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         
                                         if(response.statusCode == 200)
                                         {
-                                          String userId = _user['userId'].toString();
-                                          Navigator.push(context, MaterialPageRoute(builder: (context){
-                                            return EmailVerify(userId);
-                                          }));
+                                          
                                          
-                                         _formKey.currentState.reset();
+                                         //_formKey.currentState.reset();
 
                                         }
                                         
@@ -754,6 +1066,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                         Fluttertoast.showToast(msg: 'Please select your gender');
                                       }
 
+                                      if(passwordController.text != confirmPasswordController.text)
+                                      {
+                                        Fluttertoast.showToast(msg: 'Password and confirm password fields do not match. Please try Again.');
+                                      }
+
+                                      if(passwordController.text.length < 8 || confirmPasswordController.text.length < 8)
+                                      {
+                                        Fluttertoast.showToast(msg: 'Minimum length criteria for password and confirm password is not achieved. Please try again.');
+                                      }
+
                                       Scaffold.of(context)
                                           .showSnackBar(SnackBar(
                                         backgroundColor: Colors.black87,
@@ -786,7 +1108,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
               ),
             ),
           ),
-        ),
     );
   }
 }
