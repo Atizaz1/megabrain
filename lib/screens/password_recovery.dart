@@ -4,8 +4,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'package:mailer2/mailer.dart';
 
 
 class PasswordVerify extends StatefulWidget 
@@ -82,36 +81,81 @@ class _PasswordVerifyState extends State<PasswordVerify>
       });
 
       Fluttertoast.showToast(msg: 'Something Went Wrong. Check your email address and internet connectivity and try again.');
+
+      if(response.statusCode == 422)
+      {
+        Fluttertoast.showToast(msg: 'Looks like there is not user associated with the email address you provided. Check your email address try again.');
+      }
     }
   }
 
+  bool _isMailSent = false;
+
   sendMail(receipientEmail) async
   {
-    String username  = ''; //Sender Email;
-    String password  = ''; //Sender Email's password;
+    String username = 'nao-responda@megabrain-enem.com.br'; 
+    String password = 'Pmpartner7871'; 
 
-    final smtpServer = gmail(username, password); 
+    // final smtpServer = gmail(username, password); 
 
     String token     = jsonData['token'];
 
     print(token);
     
-    final message = Message()
-      ..from = Address(username)
-      ..recipients.add(receipientEmail)
-      ..subject = 'Verify Account' 
-      ..text = 'We have received Password Reset Request for your account.\nEmail Verification Code: $token\nEnter this code in your app to reset your account password.\n\n\nDisclaimer: If you did not initiate password recovery process. You can safely disregard this email.'; 
+    // final message = Message()
+    //   ..from = Address(username)
+    //   ..recipients.add(receipientEmail)
+    //   ..subject = 'Verify Account' 
+    //   ..text = 'We have received Password Reset Request for your account.\nEmail Verification Code: $token\nEnter this code in your app to reset your account password.\n\n\nDisclaimer: If you did not initiate password recovery process. You can safely disregard this email.'; 
 
-    try 
-    {
-      final sendReport = await send(message, smtpServer);
+    // try 
+    // {
+    //   final sendReport = await send(message, smtpServer);
 
-      print('Message sent: ' + sendReport.toString()); 
-    } 
-    on MailerException catch (e) 
-    {
-      print('Message not sent. \n'+ e.toString()); 
-    }
+    //   print('Message sent: ' + sendReport.toString()); 
+    // } 
+    // on MailerException catch (e) 
+    // {
+    //   print('Message not sent. \n'+ e.toString()); 
+    // }
+
+    var options = new SmtpOptions()
+    ..hostName  = 'smtpi.kinghost.net'
+    ..port      = 587
+    ..username  = username
+    ..password  = password;
+  
+
+    var transport = new SmtpTransport(options);
+
+    var envelope = new Envelope()
+    ..from = username
+    ..fromName = 'MegaBrain'
+    ..recipients = [receipientEmail]
+    ..subject = 'Password Recovery'
+    ..text = 'We have received Password Reset Request for your account.\nPassword Recovery Verification Code: $token\nEnter this code in your app to reset your account password.\n\n\nDisclaimer: If you did not initiate password recovery process. You can safely disregard this email.';
+
+    transport.send(envelope)
+    .then((_){
+      
+      print('email sent!');
+
+      setState(()
+      {
+         _isMailSent = true;
+      });
+
+    })
+    .catchError((e) 
+    { 
+      print('Error: $e');
+      
+      setState(()
+      {
+         _isMailSent = false;
+      });
+
+    });
   }
 
   showVerificationScreen() async
@@ -120,11 +164,17 @@ class _PasswordVerifyState extends State<PasswordVerify>
 
       await sendMail(emailController.text);
 
-      Navigator.push(context, MaterialPageRoute(builder: (context)
+      if(response.statusCode == 200 && _isMailSent)
       {
-          return PasswordCodeVerify(emailController.text);
-
-      }));
+        Navigator.push(context, MaterialPageRoute(builder: (context)
+        {
+            return PasswordCodeVerify(emailController.text);
+        }));
+      }
+      else
+      {
+        Fluttertoast.showToast(msg: 'Something Went Wrong. We are having trouble initiating password reset process for you. Check your email address and internet connectivity and try again.');
+      }
   }
 
   @override

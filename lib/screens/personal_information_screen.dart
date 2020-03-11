@@ -8,8 +8,7 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'package:mailer2/mailer.dart';
 import 'dart:math';
 import 'package:megabrain/screens/verify_email.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -66,7 +65,7 @@ class _PersonalInformationState extends State<PersonalInformation>
 
   DateTime selectedDate = DateTime.now();
 
-  var dateFormatter = new DateFormat('yyyy-MM-dd');
+  var dateFormatter = new DateFormat('dd-MM-yyyy');
 
   bool _isLoading = false;
 

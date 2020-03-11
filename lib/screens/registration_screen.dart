@@ -8,10 +8,10 @@ import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
-import 'package:mailer/mailer.dart';
-import 'package:mailer/smtp_server.dart';
+import 'package:mailer2/mailer.dart';
 import 'dart:math';
 import 'package:megabrain/screens/verify_email.dart';
+import 'package:megabrain/main.dart';
 
 
 class RegistrationScreen extends StatefulWidget {
@@ -61,7 +61,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   DateTime selectedDate = DateTime.now();
 
-  var dateFormatter = new DateFormat('yyyy-MM-dd');
+  var dateFormatter = new DateFormat('dd-MM-yyyy');
 
   bool _isLoading = false;
 
@@ -236,31 +236,71 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       return base64Url.encode(values);
   }
   
+  bool _isMailSent = false;
+
   sendMail(receipientEmail) async
   {
-    String username = ''; //Sender Email;
-    String password = ''; //Sender Email's password;
+    String username = 'nao-responda@megabrain-enem.com.br'; 
+    String password = 'Pmpartner7871';   
 
-    final smtpServer = gmail(username, password); 
+    //final smtpServer = gmail(username, password); 
 
     //print(verifyToken);
     
-    final message = Message()
-      ..from = Address(username)
-      ..recipients.add(receipientEmail)
-      ..subject = 'Verify Account' 
-      ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 
+    // final message = Message()
+    //   ..from = Address(username)
+    //   ..recipients.add(receipientEmail)
+    //   ..subject = 'Verify Account' 
+    //   ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 
 
-    try 
-    {
-      final sendReport = await send(message, smtpServer);
+    // try 
+    // {
+    //   final sendReport = await send(message, smtpServer);
 
-      print('Message sent: ' + sendReport.toString()); 
-    } 
-    on MailerException catch (e) 
-    {
-      print('Message not sent. \n'+ e.toString()); 
-    }
+    //   print('Message sent: ' + sendReport.toString()); 
+    // } 
+    // on MailerException catch (e) 
+    // {
+    //   print('Message not sent. \n'+ e.toString()); 
+    // }
+
+    var options = new SmtpOptions()
+    ..hostName  = 'smtpi.kinghost.net'
+    ..port      = 587
+    ..username  = username
+    ..password  = password;
+  
+
+    var transport = new SmtpTransport(options);
+
+    var envelope = new Envelope()
+    ..from = username
+    ..fromName = 'MegaBrain'
+    ..recipients = [receipientEmail]
+    ..subject = 'Verify Account'
+    ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 
+
+    transport.send(envelope)
+    .then((_){
+      
+      print('email sent!');
+
+      setState(()
+      {
+         _isMailSent = true;
+      });
+
+    })
+    .catchError((e) 
+    { 
+      print('Error: $e');
+      
+      setState(()
+      {
+         _isMailSent = false;
+      });
+
+    });
   }
  
   chooseImage() 
@@ -324,14 +364,43 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       {
         selectedDate = picked;
         bornDateController.text = dateFormatter.format(selectedDate);
+        print(bornDateController.text);
       });
   }
 
-  final _formKey = GlobalKey<FormState>();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   var _user;
 
-  register(String email, String password,String confirm_password, String nickname, String fullname,int sex,String course) async
+  var _emailErrors;
+
+  var _nicknameErrors;
+
+  var _fullnameErrors;
+
+  var _passwordErrors;
+
+  var _password_confirmationErrors;
+
+  var _borndateErrors;
+
+  var _sexErrors;
+
+  var _photoErrors;
+
+  var _stateErrors;
+
+  var _cityErrors;
+
+  var _tokenErrors;
+
+  var _courseErrors;
+
+  String _email, _password, _confirm_password, _nickname, _fullname, _course, _borndate;
+
+  int _sex;
+
+  register( _nickname, _fullname,_email, _password, _confirm_password, _course, _sex, _borndate) async
   {
     setState(() 
     {
@@ -342,28 +411,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     String fileName;  
 
-    if(sex == 0)
+    if(_sex == 0)
     {
       gender = 'Male';
     }
-    else if(sex == 1)
+    else if(_sex == 1)
     {
       gender = 'Female';
     }
+
+    print(bornDateController.text);
     
     verifyToken = createCryptoRandomString(6);
 
     Map data = 
     {
-      'nickname'                 : nickname,
-      'fullname'                 : fullname,
-      'email'                    : email,
-      'password'                 : password,
-      'password_confirmation'    : confirm_password,
-      'borndate'                 : bornDateController.text,
+      'nickname'                 : _nickname,
+      'fullname'                 : _fullname,
+      'email'                    : _email,
+      'password'                 : _password,
+      'password_confirmation'    : _confirm_password,
+      'borndate'                 : _borndate,
       'sex'                      : gender,
       'photo'                    : 'null',
-      'course'                   : course,
+      'course'                   : _course,
       'verifyToken'              : verifyToken,
       'isVerify'                 : '0',
       'state'                    : _selectedState,
@@ -384,9 +455,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       data['city'] = _selectedCity;
     }
 
-    //print(data);
+    print(data);
 
-    //print(bornDateController.text);
+    print(bornDateController.text);
 
     response = await http.post("http://megabrain-enem.com.br/API/api/auth/register",body:data);
 
@@ -417,11 +488,191 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
       
       print(jsonData);
-
-      Fluttertoast.showToast(msg: 'Something Went Wrong. Please check your registration details or internet connectivity and try again.');
                                         
     }
   }
+
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
+
+   void showErrorMessages() 
+   {
+    showDialog(
+    context: context,
+    builder: (BuildContext context) 
+    {
+      return AlertDialog(
+        title: Text('Errors'),
+        content: Text(_errors),
+        actions: <Widget>[
+          RaisedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      );
+      
+    });
+  }
+
+  void formSubmit() async
+  {
+      final form = _formKey.currentState;
+
+      if (form.validate() && _radioValue1 >= 0) 
+      {
+        form.save();
+
+        await register(_nickname, _fullname, _email, _password, _confirm_password, _course, _radioValue1, _borndate);
+
+        _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor:Colors.orange[500], content: Text('Processing. Please Wait!'),),);
+
+        if(response.statusCode  == 200 && _isMailSent) 
+        {
+          String userId = _user['userId'].toString();
+          Navigator.push(context, MaterialPageRoute(builder: (context){
+            return EmailVerify(userId);
+          }));
+          
+          form.reset();
+        }
+        else
+        {
+          await handleErrors(jsonData);
+
+          showErrorMessages();
+          
+          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
+        }          
+      }
+      else
+      {
+        if(_radioValue1 < 0)
+        {
+          Fluttertoast.showToast(msg: 'Please select your gender');
+        }
+
+        _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Incomplete Information!', style: TextStyle(color: Colors.red,),),),);
+      }
+  }
+
+  String _errors;
+  
+  handleErrors(var json)
+  {
+    if(json['errors'] != null)
+    {
+      if(json['errors']['email'] != null)
+      {
+        for(dynamic emailError in json['errors']['email'])
+        {
+          _emailErrors = emailError+'\n';
+          // print(_emailErrors);
+        }
+      }
+      if(json['errors']['nickname'] != null)
+      {
+        for(dynamic nickError in json['errors']['nickname'])
+        {
+           _nicknameErrors = nickError+'\n';
+          // print(_nicknameErrors);
+        }
+      }
+      if(json['errors']['fullname'] != null)
+      {
+        for(dynamic fullnameError in json['errors']['fullname'])
+        {
+           _fullnameErrors = fullnameError+'\n';
+          // print(_fullnameErrors);
+        }
+      }
+      if(json['errors']['password'] != null)
+      {
+        for(dynamic passwordError in json['errors']['password'])
+        {
+           _passwordErrors = passwordError+'\n';
+          // print(_passwordErrors);
+        }
+      }
+      if(json['errors']['password_confirmation'] != null)
+      {
+        for(dynamic confirmpasswordError in json['errors']['password_confirmation'])
+        {
+           _password_confirmationErrors = confirmpasswordError+'\n';
+          // print(_password_confirmationErrors);
+        }
+      }
+      if(json['errors']['borndate'] != null)
+      {
+        for(dynamic dobError in json['errors']['borndate'])
+        {
+           _borndateErrors = dobError+'\n';
+          // print(_borndateErrors);
+        }
+      }
+      if(json['errors']['course'] != null)
+      {
+        for(dynamic courseError in json['errors']['course'])
+        {
+           _courseErrors = courseError+'\n';
+          // print(_courseErrors);
+        }
+      }
+      if(json['errors']['state'] != null)
+      {
+        for(dynamic stateError in json['errors']['state'])
+        {
+           _stateErrors = stateError+'\n';
+          // print(_stateErrors);
+        }
+      }
+      if(json['errors']['city'] != null)
+      {
+        for(dynamic cityError in json['errors']['city'])
+        {
+           _cityErrors = cityError+'\n';
+          // print(_cityErrors);
+        }
+      }
+      if(json['errors']['sex'] != null)
+      {
+        for(dynamic sexError in json['errors']['sex'])
+        {
+           _sexErrors = sexError+'\n';
+          // print(_sexErrors);
+        }
+      }
+      if(json['errors']['photo'] != null)
+      {
+        for(dynamic photoError in json['errors']['photo'])
+        {
+           _photoErrors = photoError+'\n';
+          // print(_photoErrors);
+        }
+      }
+
+      // String _errors = '$_emailErrors$_nicknameErrors$_fullnameErrors$_photoErrors$_passwordErrors$_password_confirmationErrors$_borndateErrors$_courseErrors$_stateErrors$_cityErrors$_sexErrors';
+
+      var errorList = ['These issues need to be solved to process your registration'+'\n'+'\n',_emailErrors,_nicknameErrors,_fullnameErrors,_photoErrors,_passwordErrors,_password_confirmationErrors,_borndateErrors,_courseErrors,_stateErrors,_cityErrors,_sexErrors];
+      
+      var _temp = StringBuffer();
+      
+      errorList.forEach((item)
+      {
+        if(item != null)
+        {
+          _temp.write(item);
+        }
+
+      });
+
+      _errors = _temp.toString();
+
+      print(_errors);
+
+    }
+  }
+
+  
 
   @override
   Widget build(BuildContext context) {
@@ -432,6 +683,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 ),
               ),
         child: Scaffold(
+          key: _scaffoldKey,
           backgroundColor: Colors.transparent,
           appBar: AppBar(
             elevation: 0,
@@ -481,13 +733,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 35.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
+                          validator: (value) 
+                          {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter nick name';
                               }
-                              return null;
-                            },
+                              else if(value.length < 3)
+                              {
+                                return 'Nick Name can not be short than 3 characters minimum';
+                              }
+                              else
+                                return null;
+                          },
                           obscureText: false,
+                          onSaved: (value)
+                          {
+                             _nickname = value;
+                          },
                           controller: nicknameController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -498,13 +761,24 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
+                          validator: (value) 
+                          {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter full name';
                               }
-                              return null;
-                            },
+                              else if(value.length < 3)
+                              {
+                                return 'Full Name can not be short than 3 characters minimum';
+                              }
+                              else
+                                return null;
+                          },
                           controller: fullnameController,
+                          onSaved: (value)
+                          {
+                             _fullname = value;
+                          },
                           obscureText: false,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -515,13 +789,27 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) 
-                              {
-                                return 'Please enter valid email';
-                              }
+                          keyboardType: TextInputType.emailAddress,
+                          onSaved: (value)
+                          {
+                             _email = value;
+                          },
+                          validator: (value) 
+                          {
+                            Pattern pattern =
+                             r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                            RegExp regex = new RegExp(pattern);
+                            if (!regex.hasMatch(value) )
+                            {
+                              return 'Please Enter Valid Email';
+                            }
+                            else if(value.isEmpty)
+                            {
+                              return 'Email Cannot be Blank';
+                            }
+                            else
                               return null;
-                            },
+                          },
                           obscureText: false,
                           controller: emailController,
                           decoration: InputDecoration(
@@ -533,12 +821,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
+                          onSaved: (value)
+                          {
+                             _password = value;
+                          },
+                          validator: (value) 
+                          {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter password';
                               }
-                              return null;
-                            },
+                              else if(value.length < 8)
+                              {
+                                return 'Password Length cannot be less than 8 Characters';
+                              }
+                              else
+                                return null;
+                          },
                           obscureText: true,
                           controller: passwordController,
                           decoration: InputDecoration(
@@ -550,12 +849,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
+                          onSaved: (value){
+                             _confirm_password = value;
+                          },
+                          validator: (value) 
+                          {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter password again';
                               }
-                              return null;
-                            },
+                              else if(value.length < 8)
+                              {
+                                return 'Confirm Password Length cannot be less than 8 Characters';
+                              }
+                              else
+                                return null;
+                          },
                           obscureText: true,
                           controller: confirmPasswordController,
                           decoration: InputDecoration(
@@ -567,12 +876,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
+                          onSaved: (value){
+                             _course = value;
+                          },
+                          validator: (value) 
+                          {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter course name';
                               }
-                              return null;
-                            },
+                              else if(value.length < 8)
+                              {
+                                return 'Coure Name cannot be less than 3 Characters';
+                              }
+                              else
+                                return null;
+                          },
                           obscureText: false,
                           controller: courseController,
                           decoration: InputDecoration(
@@ -585,11 +904,22 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         SizedBox(height: 15.0),
                         TextFormField(
                               obscureText: false,
-                              validator: (value) {
-                                if (value.isEmpty) {
+                              onSaved: (value)
+                              {
+                                _borndate = value;
+                              },
+                              validator: (value) 
+                              {
+                                if (value.isEmpty) 
+                                {
                                   return 'Please enter birth date';
                                 }
-                                return null;
+                                else if(_borndateErrors != null)
+                                {
+                                  return _borndateErrors;
+                                }
+                                else
+                                  return null;
                               },
                               decoration: InputDecoration(
                                   contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -654,7 +984,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             SizedBox(
                               height: 15.0,
                             ),
-                            Text("Please select a state: "),
+                            Text("Please Select a State: "),
                             DropdownButton(
                               value: _selectedState,
                               items: _dropDownMenuStates,
@@ -663,7 +993,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                             SizedBox(
                               height: 15.0,
                             ),
-                            Text("Please select a city: "),
+                            Text("Please Select a City: "),
                             DropdownButton(
                               value: _selectedCity,
                               items: _dropDownMenuCities,
@@ -675,98 +1005,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               child: MaterialButton(
                                 onPressed: () 
                                 {
-                                  if (_formKey.currentState.validate() && _radioValue1 >= 0) 
-                                  {
-
-                                     register(emailController.text,passwordController.text,confirmPasswordController.text, nicknameController.text,fullnameController.text,_radioValue1, courseController.text );
-                                    _formKey.currentState.save();
-
-                                    _formKey.currentState.reset();
-                                    Scaffold.of(context)
-                                        .showSnackBar(SnackBar(backgroundColor:Colors.orange[500],
-                                        content: Text('Processing. Please Wait!'),
-                                        ),
-                                        );
-
-                                      Future.delayed(const Duration(milliseconds: 20000), () 
-                                      {
-                                        
-                                        if(response.statusCode == 200)
-                                        {
-                                          String userId = _user['userId'].toString();
-                                          Navigator.push(context, MaterialPageRoute(builder: (context){
-                                            return EmailVerify(userId);
-                                          }));
-                                         
-                                         _formKey.currentState.reset();
-
-                                        }
-                                        
-                                        
-                                        // Alert(
-                                        //     context: context,
-                                        //     style: AlertStyle(
-                                        //       backgroundColor: Colors.grey[300],
-                                              
-                                        //       isCloseButton: false,
-                                        //     ),
-                                        //     type: AlertType.info,
-                                        //     title: "Information",
-                                        //     desc: "Please verify your email to confirm your account.",
-                                        //     buttons: [
-                                        //       DialogButton(
-                                        //         child: Text(
-                                        //           "RESEND",
-                                        //           style: TextStyle(color: Colors.white, fontSize: 20),
-                                        //         ),
-                                        //         onPressed: ()
-                                        //         {
-                                        //           Navigator.pop(context);
-
-                                        //           sendMail(emailController.text);
-                                                  
-                                        //         },
-                                        //         color: Colors.orange[500],
-                                        //       ),
-                                        //       DialogButton(
-                                        //         child: Text(
-                                        //           "Close",
-                                        //           style: TextStyle(color: Colors.white, fontSize: 20),
-                                        //         ),
-                                        //         onPressed: () => Navigator.pop(context),
-                                        //         color: Colors.orange[500],
-                                        //       )
-                                        //     ],
-                                        //   ).show();
-                                        
-
-                                      });
-
-
-                                  
-                                  }
-                                  else
-                                  {
-                                    Future.delayed(const Duration(milliseconds: 2500), () 
-                                    {
-                                      if(_radioValue1 < 0)
-                                      {
-                                        Fluttertoast.showToast(msg: 'Please select your gender');
-                                      }
-
-                                      Scaffold.of(context)
-                                          .showSnackBar(SnackBar(
-                                        backgroundColor: Colors.black87,
-                                        
-                                        content: 
-                                        Text('Unable to process. Incomplete Information!',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                        ),),
-                                        ),
-                                        );
-                                    });
-                                  }
+                                  formSubmit();
                                 },
                                 minWidth: 150.0,
                                 color: Colors.orange[500],
@@ -777,9 +1016,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ),
                             ),
                           ),
-                          
-                            // controller: textController,
-                            // onTap: () => _selectDate(context),
                       ],
                     ),
                 ),
