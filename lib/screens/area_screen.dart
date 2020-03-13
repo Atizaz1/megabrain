@@ -1,39 +1,59 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
-import 'package:megabrain/screens/area_screen.dart';
+import 'package:megabrain/screens/topic_screen.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 
-class HomeScreen extends StatefulWidget 
+class AreaScreen extends StatefulWidget 
 {
+  final subjectCode;
+
+  final subjectName;
+
+  AreaScreen({this.subjectCode, this.subjectName});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _AreaScreenState createState() => _AreaScreenState();
 }
 
-class Subject 
+class Area 
 {
+    int areaCode;
     int ssCode;
-    String ssName;
+    String areaName;
 
-    Subject({
+    Area({
+        this.areaCode,
         this.ssCode,
-        this.ssName,
+        this.areaName,
     });
 
-    factory Subject.fromJson(Map<String, dynamic> json) => Subject(
+    factory Area.fromJson(Map<String, dynamic> json) => Area(
+        areaCode: json["area_code"],
         ssCode: json["ss_code"],
-        ssName: json["ss_name"],
+        areaName: json["area_name"],
     );
 
     Map<String, dynamic> toJson() => {
+        "area_code": areaCode,
         "ss_code": ssCode,
-        "ss_name": ssName,
+        "area_name": areaName,
     };
 }
 
-class _HomeScreenState extends State<HomeScreen> 
+class _AreaScreenState extends State<AreaScreen> 
 {
+  String ss_code;
+
+  String ss_name;
+
+  setSubjectData(dynamic code, dynamic name)
+  {
+    ss_code = code;
+    ss_name = name;
+  }
+
   SharedPreferences sharedPreferences;
 
   static Color fromHex(String hexString) 
@@ -63,33 +83,34 @@ class _HomeScreenState extends State<HomeScreen>
   {
     super.initState();
     checkLoginAndFetchDetails();
+    setSubjectData(widget.subjectCode, widget.subjectName);
   }
   
-  List<Subject> subjectList;
+  List<Area> areaList;
 
   bool _isLoading = false;
 
-  var subjectResponse;
+  var areaResponse;
   
-  var jsonSubjectData;
+  var jsonAreaData;
 
   void checkLoginAndFetchDetails() async
   {
     await checkLoginStatus();
-    await fetchSubjectList();
+    await fetchAreaList();
   }
 
-  List<Subject> subjectFromJson(String str) 
+  List<Area> areaFromJson(String str) 
   {
-    return List<Subject>.from(convert.jsonDecode(str).map((x) => Subject.fromJson(x)));
+    return List<Area>.from(convert.jsonDecode(str).map((x) => Area.fromJson(x)));
   }
 
-  String subjectToJson(List<Subject> data) 
+  String areaToJson(List<Area> data) 
   {
     return convert.jsonEncode(List<dynamic>.from(data.map((x) => x.toJson())));
   }
 
-  fetchSubjectList() async 
+  fetchAreaList() async 
   {
     setState(() 
     {
@@ -105,11 +126,13 @@ class _HomeScreenState extends State<HomeScreen>
       'Authorization' : 'Bearer $token',
     };
 
-    subjectResponse = await http.get("http://megabrain-enem.com.br/API/api/auth/subjects",headers:authorizationHeaders);
+    print(ss_code);
 
-    jsonSubjectData = convert.jsonDecode(subjectResponse.body);
+    areaResponse = await http.get("http://megabrain-enem.com.br/API/api/auth/getAreasListBySubjectCode/$ss_code",headers:authorizationHeaders);
 
-    if(subjectResponse.statusCode == 200)
+    jsonAreaData = convert.jsonDecode(areaResponse.body);
+
+    if(areaResponse.statusCode == 200)
     {
 
       setState(() 
@@ -117,11 +140,11 @@ class _HomeScreenState extends State<HomeScreen>
         _isLoading = false;
       });
 
-      print(jsonSubjectData);
+      print(jsonAreaData);
 
-      subjectList = subjectFromJson(subjectResponse.body);
+      areaList = areaFromJson(areaResponse.body);
 
-      print(subjectList.first.ssName);
+      print(areaList.first.areaName);
 
     }
     else
@@ -131,7 +154,7 @@ class _HomeScreenState extends State<HomeScreen>
         _isLoading = false;
       });
       
-      print(subjectResponse);
+      print(jsonAreaData);
                                         
     }
   }
@@ -141,7 +164,7 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       appBar: AppBar(
         // leading: Icon(Icons.menu),
-        title: Text('Home',
+        title: Text(ss_name,
         style: TextStyle(
           color: Colors.white,
         ),
@@ -192,10 +215,9 @@ class _HomeScreenState extends State<HomeScreen>
                     FlatButton(
                       onPressed: ()
                       {
-                        sharedPreferences.clear();
-                        sharedPreferences.commit();
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
-
+                          sharedPreferences.clear();
+                          sharedPreferences.commit();
+                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
                       },
                       child: Text(
                         "LogOut",
@@ -239,157 +261,157 @@ class _HomeScreenState extends State<HomeScreen>
 
         ],
       ),
-      drawer: Drawer(
-          child: Container(
-            color: Colors.white,
-            child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                child: Text('Drawer Header'),
-                decoration: BoxDecoration(
-                  image:DecorationImage(
-                    image: AssetImage('images/applogo2.png'),
-                    fit:BoxFit.contain
-                    ),
-                  color: Colors.white,
-                ),
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/biol.jpg'),
-                title: Text('Biology',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      // drawer: Drawer(
+      //     child: Container(
+      //       color: Colors.white,
+      //       child: ListView(
+      //       padding: EdgeInsets.zero,
+      //       children: <Widget>[
+      //         DrawerHeader(
+      //           child: Text('Drawer Header'),
+      //           decoration: BoxDecoration(
+      //             image:DecorationImage(
+      //               image: AssetImage('images/applogo2.png'),
+      //               fit:BoxFit.contain
+      //               ),
+      //             color: Colors.white,
+      //           ),
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/biol.jpg'),
+      //           title: Text('Biology',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/chem.jpg'),
-                title: Text('Chemistry',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/chem.jpg'),
+      //           title: Text('Chemistry',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/math.jpg'),
-                title: Text('Maths',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/math.jpg'),
+      //           title: Text('Maths',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/physics.jpg'),
-                title: Text('Physics',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/physics.jpg'),
+      //           title: Text('Physics',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/library_add_check.png'),
-                title: Text('Remember',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/library_add_check.png'),
+      //           title: Text('Remember',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/config.png'),
-                title: Text('Configuration',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/config.png'),
+      //           title: Text('Configuration',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/news.png',
-                width: 55.0,),
-                title: Text('News',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/news.png',
+      //           width: 55.0,),
+      //           title: Text('News',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-            ],
-        ),
-          ),
-      ),
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //       ],
+      //   ),
+      //     ),
+      // ),
       body: Container(
         height: MediaQuery.of(context).size.height / 1,
         color: Colors.grey[300],
@@ -420,32 +442,24 @@ class _HomeScreenState extends State<HomeScreen>
                 color: Colors.grey[350],
                 child: _isLoading ? Center(child: CircularProgressIndicator(
                   backgroundColor: Colors.orange[500],
-                )): GridView.builder(
+                )):GridView.builder(
                 shrinkWrap: true,
                 gridDelegate:
                 SliverGridDelegateWithFixedCrossAxisCount(
                                    crossAxisCount: 2
                 ),
-                itemCount: (subjectList == null || subjectList.length == 0) ? 0 : subjectList.length,
+                itemCount: (areaList == null || areaList.length == 0) ? 0 : areaList.length,
                 itemBuilder: (context, index) 
                 {
                   return GestureDetector(
                     onTap: () 
                     {
-                      print("tapped");
-                      Navigator.push(context, MaterialPageRoute(builder: (context) 
-                      {
-                        return AreaScreen(subjectCode: subjectList[index].ssCode.toString(), subjectName: subjectList[index].ssName,);
+                      Navigator.push(context, MaterialPageRoute(builder: (context) {
+                        return TopicScreen(subjectCode: ss_code,subjectName: ss_name,area_code: areaList[index].areaCode.toString(),area_name: areaList[index].areaName);
                       }));
                     },
-                    child: 
-                        MenuCard(imageTitle: 
-                        subjectList[index].ssName == 'BIOLOGIA' ? 'biol' : 
-                        subjectList[index].ssName == 'FÍSICA' ? 'physics': 
-                        subjectList[index].ssName == 'MATEMÁTICA' ? 'math' : 
-                        subjectList[index].ssName == 'QUÍMICA' ? 'chem' : 'course_generic' , 
-                        menuText: subjectList[index].ssName 
-                        ),
+                    child:  MenuCard(imageTitle: 'topic_generic' , menuText: areaList[index].areaName 
+                    ),
                   );
                 }, ),
                 
@@ -679,36 +693,36 @@ class _HomeScreenState extends State<HomeScreen>
               //   ],  
               //   ),
               ),
-              SizedBox(height: 5.0),
-              Card(
-              child: Padding(
+              // SizedBox(height: 5.0),
+              // Card(
+              // child: Padding(
                 
-                padding: const EdgeInsets.all(15.0),
-                child: FlatButton(
-                  onPressed: (){
+              //   padding: const EdgeInsets.all(15.0),
+              //   child: FlatButton(
+              //     onPressed: (){
                     
-                  },
-                  padding: EdgeInsets.zero,
-                    child: ListTile(
-                    leading: Image.asset('images/news.png',
-                    width: 200.0,
-                    height: 60.0,
-                    ),
-                    title: Text('NEWS',
-                    style:TextStyle(
-                      fontSize: 15.0,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    ),
-                    onTap: (){
+              //     },
+              //     padding: EdgeInsets.zero,
+              //       child: ListTile(
+              //       leading: Image.asset('images/news.png',
+              //       width: 200.0,
+              //       height: 60.0,
+              //       ),
+              //       title: Text('NEWS',
+              //       style:TextStyle(
+              //         fontSize: 15.0,
+              //         color: Colors.white,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //       ),
+              //       onTap: (){
 
-                    },
-                  ),
-                ),
-              ),
-              color: color,
-              ),
+              //       },
+              //     ),
+              //   ),
+              // ),
+              // color: color,
+              // ),
               ],
             ),
           ),
@@ -732,7 +746,7 @@ class MenuCard extends StatelessWidget
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
         IconButton(
-        icon:Image.asset(imageTitle != 'course_generic' ? 'images/$imageTitle.jpg' : 'images/$imageTitle.png',
+        icon:Image.asset('images/$imageTitle.png',
         // width: 500.0,
         // height: 300.0,
         ) ,

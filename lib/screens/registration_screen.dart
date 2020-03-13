@@ -227,6 +227,56 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+  fetchCityList2() async
+  {
+    setState(() 
+    {
+      _isLoading = true;
+    });
+    // String token = sharedPreferences.get('token');
+
+    // Map<String,String> authorizationHeaders=
+    // {
+    //   'Content-Type'  : 'application/json',
+    //   'Accept'        : 'application/json',
+    //   'Authorization' : 'Bearer $token',
+    // };
+
+    String stateCode = 1.toString();
+
+    cityResponse = await http.get("http://megabrain-enem.com.br/API/api/getCitiesListByStateCode/$stateCode");
+
+    jsonCityData = convert.jsonDecode(cityResponse.body);
+
+    if(cityResponse.statusCode == 200)
+    {
+
+      setState(() 
+      {
+        _isLoading = false;
+      });
+
+      _cities = jsonCityData['cities'];
+
+      print(_cities);
+
+      _dropDownMenuCities = buildAndGetCityMenuItems(_cities);
+
+      _selectedCity = _dropDownMenuCities[0].value;
+
+    }
+    else
+    {
+      setState(()
+      {
+        _isLoading = false;
+      });
+      
+      print(jsonCityData);
+                                        
+    }
+  }
+
   static final Random _random = Random.secure();
 
   String createCryptoRandomString([int length = 32]) 
@@ -343,6 +393,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
  void fetchDetails() async
  {
     await fetchStateList();
+    await fetchCityList2();
  }
 
   @override

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
@@ -59,7 +60,8 @@ class _LoginScreenState extends State<LoginScreen> {
       {
         _isLoading = false;
       });
-      
+
+      Fluttertoast.showToast(msg: 'Looks Like the entered Email or Password is invalid Or your account is Inactive.');
       
       print(response.body);
     }

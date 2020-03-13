@@ -514,6 +514,56 @@ class _PersonalInformationState extends State<PersonalInformation>
                                         
     }
   }
+
+  fetchCityList2() async
+  {
+    setState(() 
+    {
+      _isLoading = true;
+    });
+    // String token = sharedPreferences.get('token');
+
+    // Map<String,String> authorizationHeaders=
+    // {
+    //   'Content-Type'  : 'application/json',
+    //   'Accept'        : 'application/json',
+    //   'Authorization' : 'Bearer $token',
+    // };
+
+    String stateCode = 1.toString();
+
+    cityResponse = await http.get("http://megabrain-enem.com.br/API/api/getCitiesListByStateCode/$stateCode");
+
+    jsonCityData = convert.jsonDecode(cityResponse.body);
+
+    if(cityResponse.statusCode == 200)
+    {
+
+      setState(() 
+      {
+        _isLoading = false;
+      });
+
+      _cities = jsonCityData['cities'];
+
+      print(_cities);
+
+      _dropDownMenuCities = buildAndGetCityMenuItems(_cities);
+
+      _selectedCity = _dropDownMenuCities[0].value;
+
+    }
+    else
+    {
+      setState(()
+      {
+        _isLoading = false;
+      });
+      
+      print(jsonCityData);
+                                        
+    }
+  }
   
 
   void checkLoginAndFetchDetails() async
@@ -521,6 +571,7 @@ class _PersonalInformationState extends State<PersonalInformation>
     await checkLoginStatus();
     await fetchUserData();
     await fetchStateList();
+    await fetchCityList2();
     setUserData();
   }
 
@@ -529,7 +580,7 @@ class _PersonalInformationState extends State<PersonalInformation>
     return Scaffold(
       appBar: AppBar(
         // leading: Icon(Icons.menu),
-        title: Text('Home',
+        title: Text('Personal Information',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -599,157 +650,157 @@ class _PersonalInformationState extends State<PersonalInformation>
 
         ],
       ),
-      drawer: Drawer(
-          child: Container(
-            color: Colors.white,
-            child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                child: Text('Drawer Header'),
-                decoration: BoxDecoration(
-                  image:DecorationImage(
-                    image: AssetImage('images/applogo2.png'),
-                    fit:BoxFit.contain
-                    ),
-                  color: Colors.white,
-                ),
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/biol.jpg'),
-                title: Text('Biology',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      // drawer: Drawer(
+      //     child: Container(
+      //       color: Colors.white,
+      //       child: ListView(
+      //       padding: EdgeInsets.zero,
+      //       children: <Widget>[
+      //         DrawerHeader(
+      //           child: Text('Drawer Header'),
+      //           decoration: BoxDecoration(
+      //             image:DecorationImage(
+      //               image: AssetImage('images/applogo2.png'),
+      //               fit:BoxFit.contain
+      //               ),
+      //             color: Colors.white,
+      //           ),
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/biol.jpg'),
+      //           title: Text('Biology',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/chem.jpg'),
-                title: Text('Chemistry',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/chem.jpg'),
+      //           title: Text('Chemistry',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/math.jpg'),
-                title: Text('Maths',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/math.jpg'),
+      //           title: Text('Maths',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/physics.jpg'),
-                title: Text('Physics',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/physics.jpg'),
+      //           title: Text('Physics',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/library_add_check.png'),
-                title: Text('Remember',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/library_add_check.png'),
+      //           title: Text('Remember',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/config.png'),
-                title: Text('Configuration',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/config.png'),
+      //           title: Text('Configuration',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/news.png',
-                width: 55.0,),
-                title: Text('News',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/news.png',
+      //           width: 55.0,),
+      //           title: Text('News',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-            ],
-        ),
-          ),
-      ),
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //       ],
+      //   ),
+      //     ),
+      // ),
            body: Builder(
             builder: (context) => Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),

@@ -1,39 +1,81 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
-import 'package:megabrain/screens/area_screen.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 
-class HomeScreen extends StatefulWidget 
+import 'image_screen.dart';
+
+class TopicScreen extends StatefulWidget 
 {
+  final subjectCode;
+
+  final subjectName;
+
+  final area_code;
+
+  final area_name;
+
+  TopicScreen({this.subjectCode, this.subjectName, this.area_code, this.area_name});
+
   @override
-  _HomeScreenState createState() => _HomeScreenState();
+  _TopicScreenState createState() => _TopicScreenState();
 }
 
-class Subject 
+class Topic 
 {
+    int topicCode;
     int ssCode;
-    String ssName;
+    int areaCode;
+    String topicName;
+    dynamic observation;
 
-    Subject({
+    Topic({
+        this.topicCode,
         this.ssCode,
-        this.ssName,
+        this.areaCode,
+        this.topicName,
+        this.observation,
     });
 
-    factory Subject.fromJson(Map<String, dynamic> json) => Subject(
+    factory Topic.fromJson(Map<String, dynamic> json) => Topic(
+        topicCode: json["topic_code"],
         ssCode: json["ss_code"],
-        ssName: json["ss_name"],
+        areaCode: json["area_code"],
+        topicName: json["topic_name"],
+        observation: json["observation"],
     );
 
     Map<String, dynamic> toJson() => {
+        "topic_code": topicCode,
         "ss_code": ssCode,
-        "ss_name": ssName,
+        "area_code": areaCode,
+        "topic_name": topicName,
+        "observation": observation,
     };
 }
 
-class _HomeScreenState extends State<HomeScreen> 
+class _TopicScreenState extends State<TopicScreen> 
 {
+  String ss_code;
+
+  String ss_name;
+
+  String area_code;
+
+  String area_name;
+
+  setSubjectAndAreaData(dynamic s_code, dynamic s_name, dynamic a_code, dynamic a_name)
+  {
+    ss_code   = s_code;
+
+    ss_name   = s_name;
+    
+    area_code = a_code;
+
+    area_name = a_name;
+  }
+
   SharedPreferences sharedPreferences;
 
   static Color fromHex(String hexString) 
@@ -63,33 +105,34 @@ class _HomeScreenState extends State<HomeScreen>
   {
     super.initState();
     checkLoginAndFetchDetails();
+    setSubjectAndAreaData(widget.subjectCode, widget.subjectName, widget.area_code, widget.area_name);
   }
   
-  List<Subject> subjectList;
+  List<Topic> topicList;
 
   bool _isLoading = false;
 
-  var subjectResponse;
+  var topicResponse;
   
-  var jsonSubjectData;
+  var jsonTopicData;
 
   void checkLoginAndFetchDetails() async
   {
     await checkLoginStatus();
-    await fetchSubjectList();
+    await fetchTopicList();
   }
 
-  List<Subject> subjectFromJson(String str) 
+  List<Topic> topicFromJson(String str) 
   {
-    return List<Subject>.from(convert.jsonDecode(str).map((x) => Subject.fromJson(x)));
+    return List<Topic>.from(convert.jsonDecode(str).map((x) => Topic.fromJson(x)));
   }
 
-  String subjectToJson(List<Subject> data) 
+  String topicToJson(List<Topic> data) 
   {
     return convert.jsonEncode(List<dynamic>.from(data.map((x) => x.toJson())));
   }
 
-  fetchSubjectList() async 
+  fetchTopicList() async 
   {
     setState(() 
     {
@@ -105,11 +148,13 @@ class _HomeScreenState extends State<HomeScreen>
       'Authorization' : 'Bearer $token',
     };
 
-    subjectResponse = await http.get("http://megabrain-enem.com.br/API/api/auth/subjects",headers:authorizationHeaders);
+    print(ss_code);
 
-    jsonSubjectData = convert.jsonDecode(subjectResponse.body);
+    topicResponse = await http.get("http://megabrain-enem.com.br/API/api/auth/getTopicBySubjectAndAreaCodes/$ss_code/$area_code",headers:authorizationHeaders);
 
-    if(subjectResponse.statusCode == 200)
+    jsonTopicData = convert.jsonDecode(topicResponse.body);
+
+    if(topicResponse.statusCode == 200)
     {
 
       setState(() 
@@ -117,11 +162,11 @@ class _HomeScreenState extends State<HomeScreen>
         _isLoading = false;
       });
 
-      print(jsonSubjectData);
+      print(jsonTopicData);
 
-      subjectList = subjectFromJson(subjectResponse.body);
+      topicList = topicFromJson(topicResponse.body);
 
-      print(subjectList.first.ssName);
+      print(topicList.first.topicName);
 
     }
     else
@@ -131,7 +176,7 @@ class _HomeScreenState extends State<HomeScreen>
         _isLoading = false;
       });
       
-      print(subjectResponse);
+      print(jsonTopicData);
                                         
     }
   }
@@ -141,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen>
     return Scaffold(
       appBar: AppBar(
         // leading: Icon(Icons.menu),
-        title: Text('Home',
+        title: Text(ss_name+'-'+area_name,
         style: TextStyle(
           color: Colors.white,
         ),
@@ -192,10 +237,9 @@ class _HomeScreenState extends State<HomeScreen>
                     FlatButton(
                       onPressed: ()
                       {
-                        sharedPreferences.clear();
-                        sharedPreferences.commit();
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
-
+                          sharedPreferences.clear();
+                          sharedPreferences.commit();
+                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
                       },
                       child: Text(
                         "LogOut",
@@ -239,157 +283,157 @@ class _HomeScreenState extends State<HomeScreen>
 
         ],
       ),
-      drawer: Drawer(
-          child: Container(
-            color: Colors.white,
-            child: ListView(
-            padding: EdgeInsets.zero,
-            children: <Widget>[
-              DrawerHeader(
-                child: Text('Drawer Header'),
-                decoration: BoxDecoration(
-                  image:DecorationImage(
-                    image: AssetImage('images/applogo2.png'),
-                    fit:BoxFit.contain
-                    ),
-                  color: Colors.white,
-                ),
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/biol.jpg'),
-                title: Text('Biology',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      // drawer: Drawer(
+      //     child: Container(
+      //       color: Colors.white,
+      //       child: ListView(
+      //       padding: EdgeInsets.zero,
+      //       children: <Widget>[
+      //         DrawerHeader(
+      //           child: Text('Drawer Header'),
+      //           decoration: BoxDecoration(
+      //             image:DecorationImage(
+      //               image: AssetImage('images/applogo2.png'),
+      //               fit:BoxFit.contain
+      //               ),
+      //             color: Colors.white,
+      //           ),
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/biol.jpg'),
+      //           title: Text('Biology',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/chem.jpg'),
-                title: Text('Chemistry',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/chem.jpg'),
+      //           title: Text('Chemistry',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/math.jpg'),
-                title: Text('Maths',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/math.jpg'),
+      //           title: Text('Maths',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/physics.jpg'),
-                title: Text('Physics',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/physics.jpg'),
+      //           title: Text('Physics',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/library_add_check.png'),
-                title: Text('Remember',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/library_add_check.png'),
+      //           title: Text('Remember',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/config.png'),
-                title: Text('Configuration',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/config.png'),
+      //           title: Text('Configuration',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/news.png',
-                width: 55.0,),
-                title: Text('News',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //         ListTile(
+      //           contentPadding: EdgeInsets.zero,
+      //           leading: Image.asset('images/news.png',
+      //           width: 55.0,),
+      //           title: Text('News',
+      //           style: TextStyle(
+      //             color: Colors.black,
+      //             fontSize: 20.0,
+      //           ),
+      //           ),
+      //           onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-            ],
-        ),
-          ),
-      ),
+      //             Navigator.pop(context);
+      //           },
+      //         ),
+      //         Divider(
+      //           height: 1.0,
+      //           color: Colors.grey,
+      //         ),
+      //       ],
+      //   ),
+      //     ),
+      // ),
       body: Container(
         height: MediaQuery.of(context).size.height / 1,
         color: Colors.grey[300],
@@ -420,31 +464,24 @@ class _HomeScreenState extends State<HomeScreen>
                 color: Colors.grey[350],
                 child: _isLoading ? Center(child: CircularProgressIndicator(
                   backgroundColor: Colors.orange[500],
-                )): GridView.builder(
+                )):GridView.builder(
                 shrinkWrap: true,
                 gridDelegate:
                 SliverGridDelegateWithFixedCrossAxisCount(
                                    crossAxisCount: 2
                 ),
-                itemCount: (subjectList == null || subjectList.length == 0) ? 0 : subjectList.length,
+                itemCount: (topicList == null || topicList.length == 0) ? 0 : topicList.length,
                 itemBuilder: (context, index) 
                 {
                   return GestureDetector(
                     onTap: () 
                     {
-                      print("tapped");
                       Navigator.push(context, MaterialPageRoute(builder: (context) 
                       {
-                        return AreaScreen(subjectCode: subjectList[index].ssCode.toString(), subjectName: subjectList[index].ssName,);
+                        return ImageScreen(subjectCode: ss_code,subjectName: ss_name,area_code: area_code,area_name: area_name, topic_code: topicList[index].topicCode.toString(),topic_name: topicList[index].topicName);
                       }));
                     },
-                    child: 
-                        MenuCard(imageTitle: 
-                        subjectList[index].ssName == 'BIOLOGIA' ? 'biol' : 
-                        subjectList[index].ssName == 'FÍSICA' ? 'physics': 
-                        subjectList[index].ssName == 'MATEMÁTICA' ? 'math' : 
-                        subjectList[index].ssName == 'QUÍMICA' ? 'chem' : 'course_generic' , 
-                        menuText: subjectList[index].ssName 
+                    child:MenuCard(imageTitle: 'topic_generic' , menuText: topicList[index].topicName 
                         ),
                   );
                 }, ),
@@ -679,36 +716,36 @@ class _HomeScreenState extends State<HomeScreen>
               //   ],  
               //   ),
               ),
-              SizedBox(height: 5.0),
-              Card(
-              child: Padding(
+              // SizedBox(height: 5.0),
+              // Card(
+              // child: Padding(
                 
-                padding: const EdgeInsets.all(15.0),
-                child: FlatButton(
-                  onPressed: (){
+              //   padding: const EdgeInsets.all(15.0),
+              //   child: FlatButton(
+              //     onPressed: (){
                     
-                  },
-                  padding: EdgeInsets.zero,
-                    child: ListTile(
-                    leading: Image.asset('images/news.png',
-                    width: 200.0,
-                    height: 60.0,
-                    ),
-                    title: Text('NEWS',
-                    style:TextStyle(
-                      fontSize: 15.0,
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                    ),
-                    ),
-                    onTap: (){
+              //     },
+              //     padding: EdgeInsets.zero,
+              //       child: ListTile(
+              //       leading: Image.asset('images/news.png',
+              //       width: 200.0,
+              //       height: 60.0,
+              //       ),
+              //       title: Text('NEWS',
+              //       style:TextStyle(
+              //         fontSize: 15.0,
+              //         color: Colors.white,
+              //         fontWeight: FontWeight.bold,
+              //       ),
+              //       ),
+              //       onTap: (){
 
-                    },
-                  ),
-                ),
-              ),
-              color: color,
-              ),
+              //       },
+              //     ),
+              //   ),
+              // ),
+              // color: color,
+              // ),
               ],
             ),
           ),
@@ -728,28 +765,31 @@ class MenuCard extends StatelessWidget
   @override
   Widget build(BuildContext context) 
   {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.center,
-      children: <Widget>[
-        IconButton(
-        icon:Image.asset(imageTitle != 'course_generic' ? 'images/$imageTitle.jpg' : 'images/$imageTitle.png',
-        // width: 500.0,
-        // height: 300.0,
-        ) ,
-        iconSize: 100.0,
-        onPressed: (){
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: <Widget>[
+          IconButton(
+          icon:Image.asset('images/$imageTitle.png',
+          // width: 500.0,
+          // height: 300.0,
+          ) ,
+          iconSize: 100.0,
+          onPressed: (){
 
-        },
+          },
+        ),
+          Center(
+            child: Text(menuText,
+            style: TextStyle(
+              color:Colors.black,
+              fontSize: 15.0,
+            ),
+            ),
+          )
+        ],
       ),
-        Center(
-          child: Text(menuText,
-          style: TextStyle(
-            color:Colors.black,
-            fontSize: 15.0,
-          ),
-          ),
-        )
-      ],
     );
   }
 }
