@@ -370,25 +370,19 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ..subject = 'Verify Account'
     ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 
 
-    transport.send(envelope)
-    .then((_){
-      
+    await transport.send(envelope)
+    .then((_)
+    {
       print('email sent!');
 
-      setState(()
-      {
-         _isMailSent = true;
-      });
+      _isMailSent = true;
 
     })
     .catchError((e) 
     { 
       print('Error: $e');
       
-      setState(()
-      {
-         _isMailSent = false;
-      });
+      _isMailSent = false;
 
     });
   }
@@ -562,7 +556,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _isLoading = false;
       });
 
-      sendMail(emailController.text);
+      await sendMail(emailController.text);
 
       _user = jsonData['user'];
 
@@ -579,6 +573,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       });
       
       print(jsonData);
+
+      Fluttertoast.showToast(msg: 'Errors have been notified. Please correct the notified errors or check internet connectivity and try again.');
                                         
     }
   }
@@ -592,7 +588,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     builder: (BuildContext context) 
     {
       return AlertDialog(
-        title: Text('Errors'),
+        title: Text(_errors !=null ? 'Errors' : 'Information'),
         content: Text(_errors !=null ? _errors:'Registration Success'),
         actions: <Widget>[
           RaisedButton(
@@ -617,17 +613,15 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
         _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor:Colors.orange[500], content: Text('Processing. Please Wait!'),),);
 
-        if(response.statusCode  == 200 && _isMailSent) 
+        if(response.statusCode  == 200 && _isMailSent == true) 
         {
           String userId = _user['userId'].toString();
-          print(userId);
-          Navigator.push(context, MaterialPageRoute(builder: (context){
+          Navigator.push(context, MaterialPageRoute(builder: (context)
+          {
             return EmailVerify(userId);
-          }));
-          
-          // form.reset();
+          }));          
         }
-        else
+        else if(response.statusCode == 422)
         {
           await handleErrors(jsonData);
 
@@ -1088,7 +1082,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 ),
                                 loadingBuilder: (BuildContext context)
                                 {
-                                  return CircularProgressIndicator();
+                                  return Text('Loading... ');
                                 },
                                 suggestionsCallback: (pattern) 
                                 {

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -14,6 +15,34 @@ import 'package:megabrain/screens/verify_email.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
 
+class StateLocation 
+{
+    int stateCode;
+    int countryCode;
+    String stateNickname;
+    String stateName;
+
+    StateLocation({
+        this.stateCode,
+        this.countryCode,
+        this.stateNickname,
+        this.stateName,
+    });
+
+    factory StateLocation.fromJson(Map<String, dynamic> json) => StateLocation(
+        stateCode: json["state_code"],
+        countryCode: json["country_code"],
+        stateNickname: json["state_nickname"],
+        stateName: json["state_name"],
+    );
+
+    Map<String, dynamic> toJson() => {
+        "state_code": stateCode,
+        "country_code": countryCode,
+        "state_nickname": stateNickname,
+        "state_name": stateName,
+    };
+}
 
 
 class PersonalInformation extends StatefulWidget 
@@ -27,7 +56,7 @@ class _PersonalInformationState extends State<PersonalInformation>
 
   bool temp = false;
 
-  List _states;
+  List<StateLocation> _states;
 
   List<DropdownMenuItem<String>> _dropDownMenuStates;
 
@@ -40,6 +69,16 @@ class _PersonalInformationState extends State<PersonalInformation>
   String _selectedCity;
 
   int _radioValue1 = -1;
+
+  List<StateLocation> stateFromJson(String str) 
+  {
+    return List<StateLocation>.from(convert.jsonDecode(str).map((x) => StateLocation.fromJson(x)));
+  }
+
+  String stateToJson(List<StateLocation> data) 
+  {
+    return convert.jsonEncode(List<dynamic>.from(data.map((x) => x.toJson())));
+  }
 
   void _handleRadio(int value) 
   {
@@ -62,6 +101,9 @@ class _PersonalInformationState extends State<PersonalInformation>
   TextEditingController bornDateController        = new TextEditingController();
 
   TextEditingController courseController          = new TextEditingController();
+
+  TextEditingController _typeAheadController = TextEditingController();
+
 
   DateTime selectedDate = DateTime.now();
 
@@ -92,6 +134,34 @@ class _PersonalInformationState extends State<PersonalInformation>
   String userId;
 
   SharedPreferences sharedPreferences;
+
+  var _emailErrors;
+
+  var _nicknameErrors;
+
+  var _fullnameErrors;
+
+  var _passwordErrors;
+
+  var _password_confirmationErrors;
+
+  var _borndateErrors;
+
+  var _sexErrors;
+
+  var _photoErrors;
+
+  var _stateErrors;
+
+  var _cityErrors;
+
+  var _tokenErrors;
+
+  var _courseErrors;
+
+  String _email, _password, _confirm_password, _nickname, _fullname, _course, _borndate;
+
+  int _sex;
 
   fetchUserData() async
   {
@@ -223,15 +293,13 @@ class _PersonalInformationState extends State<PersonalInformation>
     );
   }
 
-  List<DropdownMenuItem<String>> buildAndGetStateMenuItems(List _states) 
+  List<DropdownMenuItem<String>> buildAndGetStateMenuItems(List<StateLocation> _states) 
   {
     List<DropdownMenuItem<String>> items = new List();
 
-    for (dynamic state in _states) 
+    for (var i = 0; i < _states.length ; i++) 
     {
-      print(state);
-
-      items.add(new DropdownMenuItem(value: state['state_name'], child: new Text(state['state_name'])));
+      items.add(new DropdownMenuItem(value: _states[i].stateName, child: new Text(_states[i].stateName)));
     }
 
     return items;
@@ -289,7 +357,7 @@ class _PersonalInformationState extends State<PersonalInformation>
 
   var _user;
 
-  updateUserProfile(String email, String password,String confirm_password, String nickname, String fullname,int sex,String course) async
+  updateUserProfile(String email, String password,String confirm_password, String nickname, String fullname,int sex,String course, String borndate) async
   {
     setState(() 
     {
@@ -315,9 +383,7 @@ class _PersonalInformationState extends State<PersonalInformation>
       'nickname'                 : nickname,
       'fullname'                 : fullname,
       'email'                    : email,
-      'password'                 : 'null',
-      'password_confirmation'    : 'null',
-      'borndate'                 : bornDateController.text,
+      'borndate'                 : _borndate,
       'sex'                      : gender,
       'photo'                    : 'null',
       'course'                   : course,
@@ -387,7 +453,7 @@ class _PersonalInformationState extends State<PersonalInformation>
       
       print(jsonData);
 
-      Fluttertoast.showToast(msg: 'Something Went Wrong. Please check your profile details or internet connectivity and try again.');
+      Fluttertoast.showToast(msg: 'Errors have been notified. Please correct the notified errors or check internet connectivity and try again.');
                                         
     }
   }
@@ -446,9 +512,9 @@ class _PersonalInformationState extends State<PersonalInformation>
         _isLoading = false;
       });
 
-      _states = jsonStateData;
+      _states = stateFromJson(stateResponse.body);
 
-      print(_states);
+      print(_states.first.stateName);
 
       _dropDownMenuStates = buildAndGetStateMenuItems(_states);
 
@@ -494,7 +560,7 @@ class _PersonalInformationState extends State<PersonalInformation>
         _isLoading = false;
       });
 
-      _cities = jsonCityData['cities'];
+      _cities = jsonCityData;
 
       print(_cities);
 
@@ -512,6 +578,192 @@ class _PersonalInformationState extends State<PersonalInformation>
       
       print(jsonCityData);
                                         
+    }
+  }
+
+  String _errors;
+  
+  handleErrors(var json)
+  {
+    if(json['errors'] != null)
+    {
+      if(json['errors']['email'] != null)
+      {
+        for(dynamic emailError in json['errors']['email'])
+        {
+          _emailErrors = emailError+'\n';
+          // print(_emailErrors);
+        }
+      }
+      if(json['errors']['nickname'] != null)
+      {
+        for(dynamic nickError in json['errors']['nickname'])
+        {
+           _nicknameErrors = nickError+'\n';
+          // print(_nicknameErrors);
+        }
+      }
+      if(json['errors']['fullname'] != null)
+      {
+        for(dynamic fullnameError in json['errors']['fullname'])
+        {
+           _fullnameErrors = fullnameError+'\n';
+          // print(_fullnameErrors);
+        }
+      }
+      if(json['errors']['password'] != null)
+      {
+        for(dynamic passwordError in json['errors']['password'])
+        {
+           _passwordErrors = passwordError+'\n';
+          // print(_passwordErrors);
+        }
+      }
+      if(json['errors']['password_confirmation'] != null)
+      {
+        for(dynamic confirmpasswordError in json['errors']['password_confirmation'])
+        {
+           _password_confirmationErrors = confirmpasswordError+'\n';
+          // print(_password_confirmationErrors);
+        }
+      }
+      if(json['errors']['borndate'] != null)
+      {
+        for(dynamic dobError in json['errors']['borndate'])
+        {
+           _borndateErrors = dobError+'\n';
+          // print(_borndateErrors);
+        }
+      }
+      if(json['errors']['course'] != null)
+      {
+        for(dynamic courseError in json['errors']['course'])
+        {
+           _courseErrors = courseError+'\n';
+          // print(_courseErrors);
+        }
+      }
+      if(json['errors']['state'] != null)
+      {
+        for(dynamic stateError in json['errors']['state'])
+        {
+           _stateErrors = stateError+'\n';
+          // print(_stateErrors);
+        }
+      }
+      if(json['errors']['city'] != null)
+      {
+        for(dynamic cityError in json['errors']['city'])
+        {
+           _cityErrors = cityError+'\n';
+          // print(_cityErrors);
+        }
+      }
+      if(json['errors']['sex'] != null)
+      {
+        for(dynamic sexError in json['errors']['sex'])
+        {
+           _sexErrors = sexError+'\n';
+          // print(_sexErrors);
+        }
+      }
+      if(json['errors']['photo'] != null)
+      {
+        for(dynamic photoError in json['errors']['photo'])
+        {
+           _photoErrors = photoError+'\n';
+          // print(_photoErrors);
+        }
+      }
+
+      // String _errors = '$_emailErrors$_nicknameErrors$_fullnameErrors$_photoErrors$_passwordErrors$_password_confirmationErrors$_borndateErrors$_courseErrors$_stateErrors$_cityErrors$_sexErrors';
+
+      var errorList = ['These issues need to be solved to process your request for update of personal information'+'\n'+'\n',_emailErrors,_nicknameErrors,_fullnameErrors,_photoErrors,_passwordErrors,_password_confirmationErrors,_borndateErrors,_courseErrors,_stateErrors,_cityErrors,_sexErrors];
+      
+      var _temp = StringBuffer();
+      
+      errorList.forEach((item)
+      {
+        if(item != null)
+        {
+          _temp.write(item);
+        }
+
+      });
+
+      _errors = _temp.toString();
+
+      print(_errors);
+
+    }
+  }
+
+  void showErrorMessages() 
+   {
+    showDialog(
+    context: context,
+    builder: (BuildContext context) 
+    {
+      return AlertDialog(
+        title: Text(_errors !=null ? 'Errors' : 'Information'),
+        content: Text(_errors !=null ? _errors:'Registration Success'),
+        actions: <Widget>[
+          RaisedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      );
+      
+    });
+  }
+
+  void formSubmit() async
+  {
+    final form = _formKey.currentState;
+
+    if (form.validate() && _radioValue1 >= 0) 
+    {
+      form.save();
+
+      if( (_password.isNotEmpty && _confirm_password.isNotEmpty) && (_password == _confirm_password) || (_password.isEmpty && _confirm_password.isEmpty) )
+      {
+        await updateUserProfile(_email,_password,_confirm_password, _nickname,_fullname,_radioValue1, _course, _borndate);
+        
+        if(response.statusCode  == 200) 
+        {
+          setUserData();
+        }
+        else if(response.statusCode == 422)
+        {
+          await handleErrors(jsonData);
+
+          showErrorMessages();
+          
+          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
+        }  
+      }
+      else
+      {
+        Fluttertoast.showToast(msg: 'In order to update password. Both password fields needs to have same characters and length.'); 
+      }
+    }
+    else
+    {
+        if(_radioValue1 < 0)
+        {
+          Fluttertoast.showToast(msg: 'Please select your gender');
+        }
+
+        _scaffoldKey.currentState.showSnackBar(
+          SnackBar(
+            backgroundColor: Colors.black87,content: 
+            Text('Unable to process. Incomplete Information!',
+            style: TextStyle(color: Colors.red,),
+            ),
+          ),
+        );
+      
     }
   }
 
@@ -544,7 +796,7 @@ class _PersonalInformationState extends State<PersonalInformation>
         _isLoading = false;
       });
 
-      _cities = jsonCityData['cities'];
+      _cities = jsonCityData;
 
       print(_cities);
 
@@ -565,6 +817,7 @@ class _PersonalInformationState extends State<PersonalInformation>
     }
   }
   
+  final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
   void checkLoginAndFetchDetails() async
   {
@@ -578,6 +831,7 @@ class _PersonalInformationState extends State<PersonalInformation>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       appBar: AppBar(
         // leading: Icon(Icons.menu),
         title: Text('Personal Information',
@@ -650,157 +904,6 @@ class _PersonalInformationState extends State<PersonalInformation>
 
         ],
       ),
-      // drawer: Drawer(
-      //     child: Container(
-      //       color: Colors.white,
-      //       child: ListView(
-      //       padding: EdgeInsets.zero,
-      //       children: <Widget>[
-      //         DrawerHeader(
-      //           child: Text('Drawer Header'),
-      //           decoration: BoxDecoration(
-      //             image:DecorationImage(
-      //               image: AssetImage('images/applogo2.png'),
-      //               fit:BoxFit.contain
-      //               ),
-      //             color: Colors.white,
-      //           ),
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/biol.jpg'),
-      //           title: Text('Biology',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/chem.jpg'),
-      //           title: Text('Chemistry',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/math.jpg'),
-      //           title: Text('Maths',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/physics.jpg'),
-      //           title: Text('Physics',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/library_add_check.png'),
-      //           title: Text('Remember',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/config.png'),
-      //           title: Text('Configuration',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //         ListTile(
-      //           contentPadding: EdgeInsets.zero,
-      //           leading: Image.asset('images/news.png',
-      //           width: 55.0,),
-      //           title: Text('News',
-      //           style: TextStyle(
-      //             color: Colors.black,
-      //             fontSize: 20.0,
-      //           ),
-      //           ),
-      //           onTap: () {
-
-      //             Navigator.pop(context);
-      //           },
-      //         ),
-      //         Divider(
-      //           height: 1.0,
-      //           color: Colors.grey,
-      //         ),
-      //       ],
-      //   ),
-      //     ),
-      // ),
            body: Builder(
             builder: (context) => Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -845,12 +948,22 @@ class _PersonalInformationState extends State<PersonalInformation>
                         SizedBox(height: 35.0),
                         TextFormField(
                           validator: (value) {
-                              if (value.isEmpty) {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter nick name';
                               }
-                              return null;
+                              else if(value.length < 3)
+                              {
+                                return 'Nick Name can not be short than 3 characters minimum';
+                              }
+                              else
+                                return null;
                             },
                           obscureText: false,
+                          onSaved: (value)
+                          {
+                             _nickname = value;
+                          },
                           controller: nicknameController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -862,12 +975,22 @@ class _PersonalInformationState extends State<PersonalInformation>
                         SizedBox(height: 15.0),
                         TextFormField(
                           validator: (value) {
-                              if (value.isEmpty) {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter full name';
                               }
-                              return null;
+                              else if(value.length < 3)
+                              {
+                                return 'Full Name can not be short than 3 characters minimum';
+                              }
+                              else
+                                return null;
                             },
                           controller: fullnameController,
+                          onSaved: (value)
+                          {
+                             _fullname = value;
+                          },
                           obscureText: false,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -878,11 +1001,25 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) 
-                              {
-                                return 'Please enter valid email';
-                              }
+                          keyboardType: TextInputType.emailAddress,
+                          onSaved: (value)
+                          {
+                             _email = value;
+                          },
+                          validator: (value) 
+                          {
+                              Pattern pattern =
+                             r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+                            RegExp regex = new RegExp(pattern);
+                            if (!regex.hasMatch(value) )
+                            {
+                              return 'Please Enter Valid Email';
+                            }
+                            else if(value.isEmpty)
+                            {
+                              return 'Email Cannot be Blank';
+                            }
+                            else
                               return null;
                             },
                           obscureText: false,
@@ -896,12 +1033,19 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
-                                return 'Please enter password';
-                              }
+                          onSaved: (value)
+                          {
+                             _password = value;
+                          },
+                          validator: (value) 
+                          {
+                            if(value.length < 8 && value.isNotEmpty)
+                            {
+                              return 'Password Length cannot be less than 8 Characters';
+                            }
+                            else
                               return null;
-                            },
+                          },
                           obscureText: true,
                           controller: passwordController,
                           decoration: InputDecoration(
@@ -913,12 +1057,18 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
-                                return 'Please enter password again';
-                              }
+                          onSaved: (value){
+                             _confirm_password = value;
+                          },
+                          validator: (value) 
+                          {
+                            if(value.length < 8 && value.isNotEmpty)
+                            {
+                              return 'Confirm Password Length cannot be less than 8 Characters';
+                            }
+                            else
                               return null;
-                            },
+                          },
                           obscureText: true,
                           controller: confirmPasswordController,
                           decoration: InputDecoration(
@@ -930,12 +1080,22 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
-                          validator: (value) {
-                              if (value.isEmpty) {
+                          onSaved: (value){
+                             _course = value;
+                          },
+                          validator: (value) 
+                          {
+                              if (value.isEmpty) 
+                              {
                                 return 'Please enter course name';
                               }
-                              return null;
-                            },
+                              else if(value.length < 3)
+                              {
+                                return 'Coure Name cannot be less than 3 Characters';
+                              }
+                              else
+                                return null;
+                          },
                           obscureText: false,
                           controller: courseController,
                           decoration: InputDecoration(
@@ -948,11 +1108,18 @@ class _PersonalInformationState extends State<PersonalInformation>
                         SizedBox(height: 15.0),
                         TextFormField(
                               obscureText: false,
-                              validator: (value) {
-                                if (value.isEmpty) {
+                              onSaved: (value)
+                              {
+                                _borndate = value;
+                              },
+                              validator: (value) 
+                              {
+                                if (value.isEmpty) 
+                                {
                                   return 'Please enter birth date';
                                 }
-                                return null;
+                                else
+                                  return null;
                               },
                               decoration: InputDecoration(
                                   contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -1027,6 +1194,59 @@ class _PersonalInformationState extends State<PersonalInformation>
                               height: 15.0,
                             ),
                             Text("Please select a city: "),
+                            TypeAheadField(
+                                textFieldConfiguration: TextFieldConfiguration(
+                                  controller: _typeAheadController,
+                                ),
+                                loadingBuilder: (BuildContext context)
+                                {
+                                  return Text('Loading... ');
+                                },
+                                suggestionsCallback: (pattern) 
+                                {
+                                  return _cities;
+                                },
+                                itemBuilder: (context, suggestion) 
+                                {
+                                  return ListTile(
+                                    leading: Icon(Icons.location_city),
+                                    title: Text(suggestion['city_name']),
+                                    // subtitle: Text('${suggestion['city_name']}'),
+                                  );
+                                },
+                                onSuggestionSelected: (suggestion) 
+                                {
+                                  _typeAheadController.text = suggestion['city_name'].toString();
+
+                                  int index = -1;
+
+                                  for(var i = 0; i < _dropDownMenuCities.length ; i++)
+                                  {
+                                    print(_dropDownMenuCities[i].value);
+                                    if(_dropDownMenuCities[i].value == suggestion['city_name'].toString())
+                                    {
+                                      index = i;
+                                      break;
+                                    }
+                                  }
+                                  if(index >= 0)
+                                  {
+                                    setState(() 
+                                    {
+                                      _selectedCity = _dropDownMenuCities[index].value;
+                                    });
+                                  }
+                                  else
+                                  {
+                                    setState(() 
+                                    {
+                                      _selectedCity = _dropDownMenuCities[0].value;
+                                    });
+                                  }
+
+
+                                },
+                              ),
                             DropdownButton(
                               value: _selectedCity,
                               items: _dropDownMenuCities,
@@ -1038,113 +1258,13 @@ class _PersonalInformationState extends State<PersonalInformation>
                               child: MaterialButton(
                                 onPressed: () 
                                 {
-                                  if (_formKey.currentState.validate() && _radioValue1 >= 0 && passwordController.text == confirmPasswordController.text
-                                  && passwordController.text.length >=8 && confirmPasswordController.text.length>=8 && _dropDownMenuCities !=null) 
-                                  {
-
-                                     updateUserProfile(emailController.text,passwordController.text,confirmPasswordController.text, nicknameController.text,fullnameController.text,_radioValue1, courseController.text );
-
-                                    _formKey.currentState.save();
-
-                                    _formKey.currentState.reset();
-                                    Scaffold.of(context)
-                                        .showSnackBar(SnackBar(backgroundColor:Colors.orange[500],
-                                        content: Text('Processing. Please Wait!'),
-                                        ),
-                                        );
-
-                                      Future.delayed(const Duration(milliseconds: 20000), () 
-                                      {
-                                        
-                                        if(response.statusCode == 200)
-                                        {
-                                          
-                                         
-                                         //_formKey.currentState.reset();
-
-                                        }
-                                        
-                                        
-                                        // Alert(
-                                        //     context: context,
-                                        //     style: AlertStyle(
-                                        //       backgroundColor: Colors.grey[300],
-                                              
-                                        //       isCloseButton: false,
-                                        //     ),
-                                        //     type: AlertType.info,
-                                        //     title: "Information",
-                                        //     desc: "Please verify your email to confirm your account.",
-                                        //     buttons: [
-                                        //       DialogButton(
-                                        //         child: Text(
-                                        //           "RESEND",
-                                        //           style: TextStyle(color: Colors.white, fontSize: 20),
-                                        //         ),
-                                        //         onPressed: ()
-                                        //         {
-                                        //           Navigator.pop(context);
-
-                                        //           sendMail(emailController.text);
-                                                  
-                                        //         },
-                                        //         color: Colors.orange[500],
-                                        //       ),
-                                        //       DialogButton(
-                                        //         child: Text(
-                                        //           "Close",
-                                        //           style: TextStyle(color: Colors.white, fontSize: 20),
-                                        //         ),
-                                        //         onPressed: () => Navigator.pop(context),
-                                        //         color: Colors.orange[500],
-                                        //       )
-                                        //     ],
-                                        //   ).show();
-                                        
-
-                                      });
-
-
-                                  
-                                  }
-                                  else
-                                  {
-                                    Future.delayed(const Duration(milliseconds: 2500), () 
-                                    {
-                                      if(_radioValue1 < 0)
-                                      {
-                                        Fluttertoast.showToast(msg: 'Please select your gender');
-                                      }
-
-                                      if(passwordController.text != confirmPasswordController.text)
-                                      {
-                                        Fluttertoast.showToast(msg: 'Password and confirm password fields do not match. Please try Again.');
-                                      }
-
-                                      if(passwordController.text.length < 8 || confirmPasswordController.text.length < 8)
-                                      {
-                                        Fluttertoast.showToast(msg: 'Minimum length criteria for password and confirm password is not achieved. Please try again.');
-                                      }
-
-                                      Scaffold.of(context)
-                                          .showSnackBar(SnackBar(
-                                        backgroundColor: Colors.black87,
-                                        
-                                        content: 
-                                        Text('Unable to process. Incomplete Information!',
-                                        style: TextStyle(
-                                          color: Colors.red,
-                                        ),),
-                                        ),
-                                        );
-                                    });
-                                  }
+                                  formSubmit();
                                 },
                                 minWidth: 150.0,
                                 color: Colors.orange[500],
                                 height: 42.0,
                                 child: Text(
-                                  'Save Information',
+                                  'Update Information',
                                 ),
                               ),
                             ),
