@@ -485,7 +485,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   int _sex;
 
-  register( _nickname, _fullname,_email, _password, _confirm_password, _course, _sex, _borndate) async
+  Pattern pattern = r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
+
+  register(_password, _confirm_password, _course, _sex, _borndate) async
   {
     setState(() 
     {
@@ -504,16 +506,14 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     {
       gender = 'Female';
     }
-
-    print(bornDateController.text);
     
     verifyToken = createCryptoRandomString(6);
 
     Map data = 
     {
-      'nickname'                 : _nickname,
-      'fullname'                 : _fullname,
-      'email'                    : _email,
+      'nickname'                 : nicknameController.text,
+      'fullname'                 : fullnameController.text,
+      'email'                    : emailController.text,
       'password'                 : _password,
       'password_confirmation'    : _confirm_password,
       'borndate'                 : _borndate,
@@ -526,6 +526,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       'city'                     : 'null',
     };
 
+    print(data);
+
     if (tmpFile != null)
     { 
       base64Image   = base64Encode(tmpFile.readAsBytesSync());
@@ -533,6 +535,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       fileName      = tmpFile.path.split("/").last;
 
       data['photo'] = base64Image+','+fileName;
+
+      print(_nickname);
+
+      print(_fullname);
+
+      print(_email);
     }
 
     if(_dropDownMenuCities != null)
@@ -581,65 +589,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
 
-   void showErrorMessages() 
-   {
-    showDialog(
-    context: context,
-    builder: (BuildContext context) 
-    {
-      return AlertDialog(
-        title: Text(_errors !=null ? 'Errors' : 'Information'),
-        content: Text(_errors !=null ? _errors:'Registration Success'),
-        actions: <Widget>[
-          RaisedButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Close'),
-          ),
-        ],
-      );
-      
-    });
-  }
 
-  void formSubmit() async
-  {
-      final form = _formKey.currentState;
 
-      if (form.validate() && _radioValue1 >= 0) 
-      {
-        form.save();
-
-        await register(_nickname, _fullname, _email, _password, _confirm_password, _course, _radioValue1, _borndate);
-
-        _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor:Colors.orange[500], content: Text('Processing. Please Wait!'),),);
-
-        if(response.statusCode  == 200 && _isMailSent == true) 
-        {
-          String userId = _user['userId'].toString();
-          Navigator.push(context, MaterialPageRoute(builder: (context)
-          {
-            return EmailVerify(userId);
-          }));          
-        }
-        else if(response.statusCode == 422)
-        {
-          await handleErrors(jsonData);
-
-          showErrorMessages();
-          
-          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
-        }          
-      }
-      else
-      {
-        if(_radioValue1 < 0)
-        {
-          Fluttertoast.showToast(msg: 'Please select your gender');
-        }
-
-        _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Incomplete Information!', style: TextStyle(color: Colors.red,),),),);
-      }
-  }
 
   String _errors;
   
@@ -758,7 +709,94 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
-  
+   void showErrorMessages() 
+   {
+    showDialog(
+    context: context,
+    builder: (BuildContext context) 
+    {
+      return AlertDialog(
+        title: Text(_errors !=null ? 'Errors' : 'Information'),
+        content: Text(_errors !=null ? _errors:'Registration Success'),
+        actions: <Widget>[
+          RaisedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      );
+      
+    });
+  }
+
+  void formSubmit() async
+  {
+    final form = _formKey.currentState;
+
+    if (form.validate() && _radioValue1 >= 0) 
+    {
+      form.save();
+
+      RegExp regex = new RegExp(pattern);
+
+      if(fullnameController.text.isEmpty)
+      {
+        Fluttertoast.showToast(msg:  'Please enter full name');
+      }
+      else if(fullnameController.text.length < 3)
+      {
+        Fluttertoast.showToast(msg:  'Full Name can not be short than 3 characters minimum');
+      }
+      else if(nicknameController.text.isEmpty)
+      {
+        Fluttertoast.showToast(msg:  'Please enter nick name');
+      }
+      else if(nicknameController.text.length < 3)
+      {
+        Fluttertoast.showToast(msg:  'Nick Name can not be short than 3 characters minimum');
+      }
+      else if(emailController.text.isEmpty)
+      {
+        Fluttertoast.showToast(msg:  'Please enter email address');
+      }
+      else if(!regex.hasMatch(emailController.text) )
+      {
+        Fluttertoast.showToast(msg:  'Please enter valid email address');
+      }
+      else
+      {
+        await register(_password, _confirm_password, _course, _radioValue1, _borndate);
+
+        _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor:Colors.orange[500], content: Text('Processing. Please Wait!'),),);
+
+        if(response.statusCode  == 200 && _isMailSent == true) 
+        {
+          String userId = _user['userId'].toString();
+          Navigator.push(context, MaterialPageRoute(builder: (context)
+          {
+            return EmailVerify(userId);
+          }));          
+        }
+        else if(response.statusCode == 422)
+        {
+          await handleErrors(jsonData);
+
+          showErrorMessages();
+          
+          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
+        }          
+        else
+        {
+          if(_radioValue1 < 0)
+          {
+            Fluttertoast.showToast(msg: 'Please select your gender');
+          }
+
+          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Incomplete Information!', style: TextStyle(color: Colors.red,),),),);
+        }
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -882,8 +920,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           },
                           validator: (value) 
                           {
-                            Pattern pattern =
-                             r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                             RegExp regex = new RegExp(pattern);
                             if (!regex.hasMatch(value) )
                             {
@@ -1043,7 +1079,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               ]
                             ),
                           ),
-                          TextFormField(
+                          TextField(
                             readOnly: true,
                             obscureText: false,
                               decoration: InputDecoration(
@@ -1055,6 +1091,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                   color: Colors.yellow,
                                   onPressed: () 
                                   {
+                                    FocusScope.of(context).unfocus(focusPrevious: true);
                                     chooseImage();
                                   }
                                   ),

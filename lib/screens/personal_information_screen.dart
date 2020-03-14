@@ -354,10 +354,13 @@ class _PersonalInformationState extends State<PersonalInformation>
   }
 
   final _formKey = GlobalKey<FormState>();
+  
+  Pattern pattern =
+  r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
 
   var _user;
 
-  updateUserProfile(String email, String password,String confirm_password, String nickname, String fullname,int sex,String course, String borndate) async
+  updateUserProfile(String password,String confirm_password,int sex,String course, String borndate) async
   {
     setState(() 
     {
@@ -380,9 +383,9 @@ class _PersonalInformationState extends State<PersonalInformation>
     Map<String,String> data = 
     {
       'userId'                   : _user['userId'].toString(),
-      'nickname'                 : nickname,
-      'fullname'                 : fullname,
-      'email'                    : email,
+      'nickname'                 : nicknameController.text,
+      'fullname'                 : fullnameController.text,
+      'email'                    : emailController.text,
       'borndate'                 : _borndate,
       'sex'                      : gender,
       'photo'                    : 'null',
@@ -411,7 +414,7 @@ class _PersonalInformationState extends State<PersonalInformation>
       data['photo'] = base64Image+','+fileName;
     }
 
-    //print(data);
+    print(data);
 
     //print(bornDateController.text);
 
@@ -725,27 +728,56 @@ class _PersonalInformationState extends State<PersonalInformation>
     if (form.validate() && _radioValue1 >= 0) 
     {
       form.save();
+      
+      RegExp regex = new RegExp(pattern);
 
-      if( (_password.isNotEmpty && _confirm_password.isNotEmpty) && (_password == _confirm_password) || (_password.isEmpty && _confirm_password.isEmpty) )
+      if(fullnameController.text.isEmpty)
       {
-        await updateUserProfile(_email,_password,_confirm_password, _nickname,_fullname,_radioValue1, _course, _borndate);
-        
-        if(response.statusCode  == 200) 
-        {
-          setUserData();
-        }
-        else if(response.statusCode == 422)
-        {
-          await handleErrors(jsonData);
-
-          showErrorMessages();
-          
-          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
-        }  
+        Fluttertoast.showToast(msg:  'Please enter full name');
+      }
+      else if(fullnameController.text.length < 3)
+      {
+        Fluttertoast.showToast(msg:  'Full Name can not be short than 3 characters minimum');
+      }
+      else if(nicknameController.text.isEmpty)
+      {
+        Fluttertoast.showToast(msg:  'Please enter nick name');
+      }
+      else if(nicknameController.text.length < 3)
+      {
+        Fluttertoast.showToast(msg:  'Nick Name can not be short than 3 characters minimum');
+      }
+      else if(emailController.text.isEmpty)
+      {
+        Fluttertoast.showToast(msg:  'Please enter email address');
+      }
+      else if(!regex.hasMatch(emailController.text) )
+      {
+        Fluttertoast.showToast(msg:  'Please enter valid email address');
       }
       else
       {
-        Fluttertoast.showToast(msg: 'In order to update password. Both password fields needs to have same characters and length.'); 
+        if( (_password.isNotEmpty && _confirm_password.isNotEmpty) && (_password == _confirm_password) || (_password.isEmpty && _confirm_password.isEmpty) )
+        {
+          await updateUserProfile(_password,_confirm_password,_radioValue1, _course, _borndate);
+          
+          if(response.statusCode  == 200) 
+          {
+            setUserData();
+          }
+          else if(response.statusCode == 422)
+          {
+            await handleErrors(jsonData);
+
+            showErrorMessages();
+            
+            _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
+          }  
+        }
+        else
+        {
+          Fluttertoast.showToast(msg: 'In order to update password. Both password fields needs to have same characters and length.'); 
+        }
       }
     }
     else
@@ -762,8 +794,7 @@ class _PersonalInformationState extends State<PersonalInformation>
             style: TextStyle(color: Colors.red,),
             ),
           ),
-        );
-      
+        );  
     }
   }
 
@@ -1008,8 +1039,6 @@ class _PersonalInformationState extends State<PersonalInformation>
                           },
                           validator: (value) 
                           {
-                              Pattern pattern =
-                             r'^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$';
                             RegExp regex = new RegExp(pattern);
                             if (!regex.hasMatch(value) )
                             {
