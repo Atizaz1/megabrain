@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
@@ -19,11 +20,40 @@ class RegistrationScreen extends StatefulWidget {
   _RegistrationScreenState createState() => _RegistrationScreenState();
 }
 
+class StateLocation 
+{
+    int stateCode;
+    int countryCode;
+    String stateNickname;
+    String stateName;
+
+    StateLocation({
+        this.stateCode,
+        this.countryCode,
+        this.stateNickname,
+        this.stateName,
+    });
+
+    factory StateLocation.fromJson(Map<String, dynamic> json) => StateLocation(
+        stateCode: json["state_code"],
+        countryCode: json["country_code"],
+        stateNickname: json["state_nickname"],
+        stateName: json["state_name"],
+    );
+
+    Map<String, dynamic> toJson() => {
+        "state_code": stateCode,
+        "country_code": countryCode,
+        "state_nickname": stateNickname,
+        "state_name": stateName,
+    };
+}
+
 class _RegistrationScreenState extends State<RegistrationScreen> {
   
   bool temp = false;
 
-  List _states;
+  List<StateLocation> _states;
 
   List<DropdownMenuItem<String>> _dropDownMenuStates;
 
@@ -32,6 +62,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   List _cities;
 
   List<DropdownMenuItem<String>> _dropDownMenuCities;
+
+  List<StateLocation> stateFromJson(String str) 
+  {
+    return List<StateLocation>.from(convert.jsonDecode(str).map((x) => StateLocation.fromJson(x)));
+  }
+
+  String stateToJson(List<StateLocation> data) 
+  {
+    return convert.jsonEncode(List<dynamic>.from(data.map((x) => x.toJson())));
+  }
 
   String _selectedCity;
 
@@ -59,6 +99,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   TextEditingController courseController          = new TextEditingController();
 
+  TextEditingController _typeAheadController = TextEditingController();
+
   DateTime selectedDate = DateTime.now();
 
   var dateFormatter = new DateFormat('dd-MM-yyyy');
@@ -85,15 +127,13 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
  
   File tmpFile;
 
-  List<DropdownMenuItem<String>> buildAndGetStateMenuItems(List _states) 
+  List<DropdownMenuItem<String>> buildAndGetStateMenuItems(List<StateLocation> _states) 
   {
     List<DropdownMenuItem<String>> items = new List();
 
-    for (dynamic state in _states) 
+    for (var i = 0; i < _states.length ; i++) 
     {
-      print(state);
-
-      items.add(new DropdownMenuItem(value: state['state_name'], child: new Text(state['state_name'])));
+      items.add(new DropdownMenuItem(value: _states[i].stateName, child: new Text(_states[i].stateName)));
     }
 
     return items;
@@ -158,9 +198,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _isLoading = false;
       });
 
-      _states = jsonStateData;
+      _states = stateFromJson(stateResponse.body);
 
-      print(_states);
+      print(_states.first.stateName);
 
       _dropDownMenuStates = buildAndGetStateMenuItems(_states);
 
@@ -206,7 +246,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _isLoading = false;
       });
 
-      _cities = jsonCityData['cities'];
+      _cities = jsonCityData;
 
       print(_cities);
 
@@ -256,7 +296,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         _isLoading = false;
       });
 
-      _cities = jsonCityData['cities'];
+      _cities = jsonCityData;
 
       print(_cities);
 
@@ -1042,6 +1082,59 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               height: 15.0,
                             ),
                             Text("Please Select a City: "),
+                              TypeAheadField(
+                                textFieldConfiguration: TextFieldConfiguration(
+                                  controller: _typeAheadController,
+                                ),
+                                loadingBuilder: (BuildContext context)
+                                {
+                                  return CircularProgressIndicator();
+                                },
+                                suggestionsCallback: (pattern) 
+                                {
+                                  return _cities;
+                                },
+                                itemBuilder: (context, suggestion) 
+                                {
+                                  return ListTile(
+                                    leading: Icon(Icons.location_city),
+                                    title: Text(suggestion['city_name']),
+                                    // subtitle: Text('${suggestion['city_name']}'),
+                                  );
+                                },
+                                onSuggestionSelected: (suggestion) 
+                                {
+                                  _typeAheadController.text = suggestion['city_name'].toString();
+
+                                  int index = -1;
+
+                                  for(var i = 0; i < _dropDownMenuCities.length ; i++)
+                                  {
+                                    print(_dropDownMenuCities[i].value);
+                                    if(_dropDownMenuCities[i].value == suggestion['city_name'].toString())
+                                    {
+                                      index = i;
+                                      break;
+                                    }
+                                  }
+                                  if(index >= 0)
+                                  {
+                                    setState(() 
+                                    {
+                                      _selectedCity = _dropDownMenuCities[index].value;
+                                    });
+                                  }
+                                  else
+                                  {
+                                    setState(() 
+                                    {
+                                      _selectedCity = _dropDownMenuCities[0].value;
+                                    });
+                                  }
+
+
+                                },
+                              ),
                             DropdownButton(
                               value: _selectedCity,
                               items: _dropDownMenuCities,
