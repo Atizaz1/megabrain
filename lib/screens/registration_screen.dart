@@ -553,7 +553,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     {
       return AlertDialog(
         title: Text('Errors'),
-        content: Text(_errors),
+        content: Text(_errors !=null ? _errors:'Registration Success'),
         actions: <Widget>[
           RaisedButton(
             onPressed: () => Navigator.pop(context),
@@ -580,11 +580,12 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
         if(response.statusCode  == 200 && _isMailSent) 
         {
           String userId = _user['userId'].toString();
+          print(userId);
           Navigator.push(context, MaterialPageRoute(builder: (context){
             return EmailVerify(userId);
           }));
           
-          form.reset();
+          // form.reset();
         }
         else
         {
@@ -936,7 +937,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               {
                                 return 'Please enter course name';
                               }
-                              else if(value.length < 8)
+                              else if(value.length < 3)
                               {
                                 return 'Coure Name cannot be less than 3 Characters';
                               }
@@ -964,10 +965,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 if (value.isEmpty) 
                                 {
                                   return 'Please enter birth date';
-                                }
-                                else if(_borndateErrors != null)
-                                {
-                                  return _borndateErrors;
                                 }
                                 else
                                   return null;
