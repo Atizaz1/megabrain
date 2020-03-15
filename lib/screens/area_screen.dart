@@ -745,18 +745,13 @@ class MenuCard extends StatelessWidget
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        IconButton(
-        icon:Image.asset('images/$imageTitle.png',
-        // width: 500.0,
-        // height: 300.0,
-        ) ,
-        iconSize: 100.0,
-        onPressed: (){
-
-        },
+        Image.asset('images/$imageTitle.png',
+        width: 100.0,
+        height: 100.0,
       ),
         Center(
           child: Text(menuText,
+          textAlign: TextAlign.center,
           style: TextStyle(
             color:Colors.black,
             fontSize: 15.0,
