@@ -61,6 +61,8 @@ class _EmailVerifyState extends State<EmailVerify>
 
     jsonData = convert.jsonDecode(response.body);
 
+    print(data);
+
     if(response.statusCode == 200)
     {
       setState(() 
@@ -68,11 +70,15 @@ class _EmailVerifyState extends State<EmailVerify>
         _isLoading = false;
       });
 
+      print(jsonData);
+
       Fluttertoast.showToast(msg: 'Your Account has been verfied successfully. You can now Log In');
 
     }
     else
     {
+
+      print(jsonData);
 
       setState(() 
       {
@@ -100,7 +106,7 @@ class _EmailVerifyState extends State<EmailVerify>
             centerTitle: true,
           ),
           body: Builder(
-            builder: (context) => Padding(
+            builder: (context) => _isLoading ? Center(child: CircularProgressIndicator()) : Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Form(
                 key: _formKey,

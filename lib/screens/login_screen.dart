@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
@@ -12,7 +13,8 @@ class LoginScreen extends StatefulWidget {
   _LoginScreenState createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> {
+class _LoginScreenState extends State<LoginScreen> 
+{
 
   TextEditingController emailController    = new TextEditingController();
 
@@ -26,7 +28,49 @@ class _LoginScreenState extends State<LoginScreen> {
 
   var response;
 
+  bool _isLoggedIn = false;
+
+  Map userProfile;
+
+  final facebookLogin = FacebookLogin();
+
   final _formKey = GlobalKey<FormState>();
+
+  _loginWithFB() async
+  {
+
+    final result = await facebookLogin.logInWithReadPermissions(['email']);
+
+    switch (result.status) 
+    {
+      case FacebookLoginStatus.loggedIn:
+        final token = result.accessToken.token;
+        final graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,picture,email&access_token=${token}');
+        final profile = convert.jsonDecode(graphResponse.body);
+        print(profile);
+        setState(() {
+          userProfile = profile;
+          _isLoggedIn = true;
+        });
+        break;
+
+      case FacebookLoginStatus.cancelledByUser:
+        setState(() => _isLoggedIn = false );
+        break;
+      case FacebookLoginStatus.error:
+        setState(() => _isLoggedIn = false );
+        break;
+    }
+
+  }
+
+  _logout()
+  {
+    facebookLogin.logOut();
+    setState(() {
+      _isLoggedIn = false;
+    });
+  }
 
   signIn(String email, String password) async
   {
@@ -311,8 +355,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             ),
                       ),
                             MaterialButton(
-                              onPressed: () {
-                                
+                              onPressed: () 
+                              {
+                                _loginWithFB();
                               },
                               minWidth: 150.0,
                               color: Colors.blue[500],
