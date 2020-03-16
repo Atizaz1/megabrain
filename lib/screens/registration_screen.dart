@@ -27,21 +27,24 @@ class StateLocation
     String stateNickname;
     String stateName;
 
-    StateLocation({
+    StateLocation
+    ({
         this.stateCode,
         this.countryCode,
         this.stateNickname,
         this.stateName,
     });
 
-    factory StateLocation.fromJson(Map<String, dynamic> json) => StateLocation(
+    factory StateLocation.fromJson(Map<String, dynamic> json) => StateLocation
+    (
         stateCode: json["state_code"],
         countryCode: json["country_code"],
         stateNickname: json["state_nickname"],
         stateName: json["state_name"],
     );
 
-    Map<String, dynamic> toJson() => {
+    Map<String, dynamic> toJson() => 
+    {
         "state_code": stateCode,
         "country_code": countryCode,
         "state_nickname": stateNickname,
@@ -50,6 +53,17 @@ class StateLocation
 }
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
+
+  List<String> getSuggestions(String query) 
+  {
+    List<String> matches = List();
+
+    matches.addAll(_suggestionCities);
+
+    matches.retainWhere((s) => s.toLowerCase().contains(query.toLowerCase()));
+
+    return matches;
+  }
   
   bool temp = false;
 
@@ -60,6 +74,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   String _selectedState;
 
   List _cities;
+
+  List<String> _suggestionCities;
 
   List<DropdownMenuItem<String>> _dropDownMenuCities;
 
@@ -153,12 +169,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   {
     List<DropdownMenuItem<String>> items = new List();
 
+    _suggestionCities = new List<String>();
+
     for (dynamic city in _cities) 
     {
       print(city);
 
+      _suggestionCities.add(city['city_name']);
+
       items.add(new DropdownMenuItem(value: city['city_name'], child: new Text(city['city_name'])));
     }
+
+    print(_suggestionCities);
 
     return items;
   }
@@ -798,6 +820,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Container(
@@ -1121,28 +1144,28 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 {
                                   return Text('Loading... ');
                                 },
-                                suggestionsCallback: (pattern) 
+                                suggestionsCallback: (pattern)
                                 {
-                                  return _cities;
+                                  return getSuggestions(pattern);
                                 },
                                 itemBuilder: (context, suggestion) 
                                 {
                                   return ListTile(
                                     leading: Icon(Icons.location_city),
-                                    title: Text(suggestion['city_name']),
-                                    // subtitle: Text('${suggestion['city_name']}'),
+                                    title: Text(suggestion),
+                                    // subtitle: Text('${suggestion}'),
                                   );
                                 },
                                 onSuggestionSelected: (suggestion) 
                                 {
-                                  _typeAheadController.text = suggestion['city_name'].toString();
+                                  _typeAheadController.text = suggestion;
 
                                   int index = -1;
 
                                   for(var i = 0; i < _dropDownMenuCities.length ; i++)
                                   {
                                     print(_dropDownMenuCities[i].value);
-                                    if(_dropDownMenuCities[i].value == suggestion['city_name'].toString())
+                                    if(_dropDownMenuCities[i].value == suggestion)
                                     {
                                       index = i;
                                       break;

@@ -54,6 +54,19 @@ class PersonalInformation extends StatefulWidget
 class _PersonalInformationState extends State<PersonalInformation> 
 {
 
+  List<String> getSuggestions(String query) 
+  {
+    List<String> matches = List();
+
+    matches.addAll(_suggestionCities);
+
+    matches.retainWhere((s) => s.toLowerCase().contains(query.toLowerCase()));
+
+    return matches;
+  }
+
+  List<String> _suggestionCities;
+
   bool temp = false;
 
   List<StateLocation> _states;
@@ -319,12 +332,18 @@ class _PersonalInformationState extends State<PersonalInformation>
   {
     List<DropdownMenuItem<String>> items = new List();
 
+    _suggestionCities = new List<String>();
+
     for (dynamic city in _cities) 
     {
       print(city);
 
+      _suggestionCities.add(city['city_name']);
+
       items.add(new DropdownMenuItem(value: city['city_name'], child: new Text(city['city_name'])));
     }
+
+    print(_suggestionCities);
 
     return items;
   }
@@ -1233,26 +1252,26 @@ class _PersonalInformationState extends State<PersonalInformation>
                                 },
                                 suggestionsCallback: (pattern) 
                                 {
-                                  return _cities;
+                                  return getSuggestions(pattern);
                                 },
                                 itemBuilder: (context, suggestion) 
                                 {
                                   return ListTile(
                                     leading: Icon(Icons.location_city),
-                                    title: Text(suggestion['city_name']),
+                                    title: Text(suggestion),
                                     // subtitle: Text('${suggestion['city_name']}'),
                                   );
                                 },
                                 onSuggestionSelected: (suggestion) 
                                 {
-                                  _typeAheadController.text = suggestion['city_name'].toString();
+                                  _typeAheadController.text = suggestion;
 
                                   int index = -1;
 
                                   for(var i = 0; i < _dropDownMenuCities.length ; i++)
                                   {
                                     print(_dropDownMenuCities[i].value);
-                                    if(_dropDownMenuCities[i].value == suggestion['city_name'].toString())
+                                    if(_dropDownMenuCities[i].value == suggestion)
                                     {
                                       index = i;
                                       break;
