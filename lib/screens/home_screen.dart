@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
 import 'package:megabrain/screens/area_screen.dart';
@@ -35,6 +36,16 @@ class Subject
 class _HomeScreenState extends State<HomeScreen> 
 {
   SharedPreferences sharedPreferences;
+
+  final facebookLogin = FacebookLogin();
+
+  _logout()
+  {
+    facebookLogin.logOut();
+    sharedPreferences.clear();
+    sharedPreferences.commit();
+    Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
+  }
 
   static Color fromHex(String hexString) 
   {
@@ -192,10 +203,7 @@ class _HomeScreenState extends State<HomeScreen>
                     FlatButton(
                       onPressed: ()
                       {
-                        sharedPreferences.clear();
-                        sharedPreferences.commit();
-                        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
-
+                        _logout();
                       },
                       child: Text(
                         "LogOut",

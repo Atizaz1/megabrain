@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
@@ -8,7 +9,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/home_screen.dart';
 
 
-class LoginScreen extends StatefulWidget {
+class LoginScreen extends StatefulWidget 
+{
   @override
   _LoginScreenState createState() => _LoginScreenState();
 }
@@ -48,10 +50,12 @@ class _LoginScreenState extends State<LoginScreen>
         final graphResponse = await http.get('https://graph.facebook.com/v2.12/me?fields=name,picture,email&access_token=${token}');
         final profile = convert.jsonDecode(graphResponse.body);
         print(profile);
-        setState(() {
+        setState(() 
+        {
           userProfile = profile;
           _isLoggedIn = true;
         });
+        getToken(profile);
         break;
 
       case FacebookLoginStatus.cancelledByUser:
@@ -64,12 +68,45 @@ class _LoginScreenState extends State<LoginScreen>
 
   }
 
-  _logout()
+  getToken(Map data) async
   {
-    facebookLogin.logOut();
-    setState(() {
-      _isLoggedIn = false;
+    setState(() 
+    {
+      _isLoading = true;
     });
+
+    Map socialData = 
+    {
+      'email'    : data['email'].toString(),
+      'id'       : data['id'].toString(),
+      'name'     : data['name'].toString(),
+    };
+
+    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
+
+    response = await http.post("http://megabrain-enem.com.br/API/api/socialSignUp",body:socialData);
+
+    if(response.statusCode == 200)
+    {
+      jsonData = convert.jsonDecode(response.body);
+      setState(() 
+      {
+        _isLoading = false;
+        sharedPreferences.setString("token", jsonData['access_token']);
+        Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => HomeScreen()), (Route<dynamic> route) => false);
+      });
+    }
+    else
+    {
+      setState(()
+      {
+        _isLoading = false;
+      });
+
+      Fluttertoast.showToast(msg: 'Looks Like We\'re having trouble signing you up using facebook. Please Try Again or check your internet connectivity.');
+      
+      print(response.body);
+    }
   }
 
   signIn(String email, String password) async
@@ -363,7 +400,7 @@ class _LoginScreenState extends State<LoginScreen>
                               color: Colors.blue[500],
                               height: 42.0,
                               child: Text(
-                                'Social Login',
+                                  'Facebook Login',
                               ),
                             ),
                         ]
