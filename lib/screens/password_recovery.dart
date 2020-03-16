@@ -69,7 +69,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
         _isLoading = false;
       });
 
-      Fluttertoast.showToast(msg: 'Your Password Reset verification code has been sent successfully.');
+      Fluttertoast.showToast(msg: 'Password Reset Process Initiated Successfully. Please wait.');
 
     }
     else
@@ -80,11 +80,16 @@ class _PasswordVerifyState extends State<PasswordVerify>
         _isLoading = false;
       });
 
-      Fluttertoast.showToast(msg: 'Something Went Wrong. Check your email address and internet connectivity and try again.');
+      Fluttertoast.showToast(msg: 'We are having trouble with Password Reset Process Initiation. Please try again or check you internet connectivity or email address.');
 
       if(response.statusCode == 422)
       {
         Fluttertoast.showToast(msg: 'Looks like there is not user associated with the email address you provided. Check your email address try again.');
+      }
+
+      if(response.statusCode == 500)
+      {
+        Fluttertoast.showToast(msg: 'Looks like server is down. Please try again after sometime.');
       }
     }
   }
@@ -135,7 +140,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
     ..subject = 'Password Recovery'
     ..text = 'We have received Password Reset Request for your account.\nPassword Recovery Verification Code: $token\nEnter this code in your app to reset your account password.\n\n\nDisclaimer: If you did not initiate password recovery process. You can safely disregard this email.';
 
-    transport.send(envelope)
+    await transport.send(envelope)
     .then((_){
       
       print('email sent!');
@@ -158,23 +163,28 @@ class _PasswordVerifyState extends State<PasswordVerify>
     });
   }
 
-  showVerificationScreen() async
+  sendPasswordVerificationDetails() async
   {
       await getToken();
 
       await sendMail(emailController.text);
 
-      if(response.statusCode == 200 && _isMailSent)
+      notifyStatus();
+  }
+
+  notifyStatus()
+  {
+    if(response.statusCode == 200 && _isMailSent)
+    {
+      Navigator.push(context, MaterialPageRoute(builder: (context)
       {
-        Navigator.push(context, MaterialPageRoute(builder: (context)
-        {
-            return PasswordCodeVerify(emailController.text);
-        }));
-      }
-      else
-      {
-        Fluttertoast.showToast(msg: 'Something Went Wrong. We are having trouble initiating password reset process for you. Check your email address and internet connectivity and try again.');
-      }
+          return PasswordCodeVerify(emailController.text);
+      }));
+    }
+    else if(! _isMailSent)
+    {
+      Fluttertoast.showToast(msg: 'We are having trouble sending you password recovery email. Please try again');
+    } 
   }
 
   @override
@@ -194,13 +204,13 @@ class _PasswordVerifyState extends State<PasswordVerify>
             centerTitle: true,
           ),
           body: Builder(
-            builder: (context) => Padding(
+            builder: (context) => _isLoading ? Center(child: CircularProgressIndicator()) : Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Form(
                 key: _formKey,
                   child: Wrap(
                   spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 4.0, 
+                  runSpacing: 1.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
@@ -265,7 +275,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
 
                             if (_formKey.currentState.validate()) 
                             {
-                                showVerificationScreen();
+                                sendPasswordVerificationDetails();
                             }
                             else
                             {

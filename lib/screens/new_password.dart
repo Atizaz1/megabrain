@@ -20,6 +20,26 @@ class _NewPasswordState extends State<NewPassword>
 {
   String email;
 
+  bool _obscurePassword = true;
+
+  bool _obscureConfirmPassword = true;
+
+  void _togglePasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscureConfirmPassword = !_obscureConfirmPassword;
+    });
+  }
+
   @override
   void initState()
   {
@@ -57,7 +77,7 @@ class _NewPasswordState extends State<NewPassword>
 
     Map data =
     {
-      'email'         : email,
+      'email'    : email,
       'password' : newpasswordController.text,
     };
 
@@ -123,7 +143,7 @@ class _NewPasswordState extends State<NewPassword>
                 key: _formKey,
                   child: Wrap(
                   spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 4.0, 
+                  runSpacing: 1.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
@@ -141,7 +161,7 @@ class _NewPasswordState extends State<NewPassword>
                         ),
                       ),
                       ),
-                      SizedBox(height: 15.0,),
+                      SizedBox(height: 10.0,),
                       Center(
                         child: Text(
                         'Set New Password',
@@ -152,7 +172,7 @@ class _NewPasswordState extends State<NewPassword>
                         ),
                       ),
                       ),
-                      SizedBox(height: 45.0),
+                      SizedBox(height: 10.0),
                       TextFormField(
                         validator: (value) 
                         {
@@ -162,16 +182,27 @@ class _NewPasswordState extends State<NewPassword>
                                 }
                                 return null;
                         },
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         controller: newpasswordController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                             hintText: "Enter new password",
-                            icon: Icon(Icons.lock),                        
+                            icon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _togglePasswordVisibility();
+                              },
+                              ),                        
                             // border:InputBorder.none,
                        ),
                       ),
-                      SizedBox(height: 45.0),
+                      SizedBox(height: 10.0),
                       TextFormField(
                         validator: (value) 
                         {
@@ -181,16 +212,27 @@ class _NewPasswordState extends State<NewPassword>
                                 }
                                 return null;
                         },
-                        obscureText: true,
+                        obscureText: _obscureConfirmPassword,
                         controller: newpasswordConfirmController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                             hintText: "Enter new password again",
-                            icon: Icon(Icons.lock),                        
+                            icon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _toggleConfirmPasswordVisibility();
+                              },
+                              ),                        
                             // border:InputBorder.none,
                        ),
                       ),
-                      SizedBox(height: 25.0),
+                      SizedBox(height: 10.0),
                     Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[

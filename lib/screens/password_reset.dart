@@ -20,6 +20,16 @@ class _PasswordCodeVerifyState extends State<PasswordCodeVerify>
 {
   String email;
 
+  bool _obscureVerificationCode = true;
+
+  void _toggleVerificationCodeVisibility() 
+  {
+    setState(() 
+    {
+      _obscureVerificationCode = !_obscureVerificationCode;
+    });
+  }
+
   @override
   void initState()
   {
@@ -94,11 +104,14 @@ class _PasswordCodeVerifyState extends State<PasswordCodeVerify>
   {
       await sendToken();
 
-      Navigator.push(context, MaterialPageRoute(builder: (context)
+      if(response.statusCode == 200)
       {
-          return NewPassword(email);
+        Navigator.push(context, MaterialPageRoute(builder: (context)
+        {
+            return NewPassword(email);
 
-      }));
+        }));
+      }
   }
 
   @override
@@ -119,12 +132,12 @@ class _PasswordCodeVerifyState extends State<PasswordCodeVerify>
           ),
           body: Builder(
             builder: (context) => Padding(
-              padding: EdgeInsets.symmetric(horizontal: 24.0),
+              padding: EdgeInsets.symmetric(horizontal: 14.0),
               child: Form(
                 key: _formKey,
                   child: Wrap(
                   spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 4.0, 
+                  runSpacing: 1.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
@@ -163,12 +176,23 @@ class _PasswordCodeVerifyState extends State<PasswordCodeVerify>
                             }
                             return null;
                         },
-                        obscureText: true,
+                        obscureText: _obscureVerificationCode,
                         controller: passwordCodeController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                             hintText: "Password Reset Verification Code",
-                            icon: Icon(Icons.lock),                        
+                            icon: Icon(Icons.lock), 
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureVerificationCode
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _toggleVerificationCodeVisibility();
+                              },
+                          ),                       
                             // border:InputBorder.none,
                        ),
                       ),
