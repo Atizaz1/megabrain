@@ -131,7 +131,7 @@ class _PasswordCodeVerifyState extends State<PasswordCodeVerify>
             centerTitle: true,
           ),
           body: Builder(
-            builder: (context) => Padding(
+            builder: (context) => _isLoading ? Center(child: CircularProgressIndicator()) : Padding(
               padding: EdgeInsets.symmetric(horizontal: 14.0),
               child: Form(
                 key: _formKey,

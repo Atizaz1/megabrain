@@ -137,7 +137,7 @@ class _NewPasswordState extends State<NewPassword>
             centerTitle: true,
           ),
           body: Builder(
-            builder: (context) => Padding(
+            builder: (context) => _isLoading ? Center(child: CircularProgressIndicator()) : Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Form(
                 key: _formKey,

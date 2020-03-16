@@ -121,7 +121,7 @@ class _EmailVerifyState extends State<EmailVerify>
                 key: _formKey,
                   child: Wrap(
                   spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 4.0, 
+                  runSpacing: 1.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
