@@ -17,6 +17,15 @@ class EmailVerify extends StatefulWidget
 
 class _EmailVerifyState extends State<EmailVerify> 
 {
+  bool _obscureVerificationCode = true;
+
+  void _toggleVerificationCodeVisibility() 
+  {
+    setState(() 
+    {
+      _obscureVerificationCode = !_obscureVerificationCode;
+    });
+  }
   String userId;
 
   @override
@@ -151,12 +160,23 @@ class _EmailVerifyState extends State<EmailVerify>
                                 }
                                 return null;
                         },
-                        obscureText: true,
+                        obscureText: _obscureVerificationCode,
                         controller: emailVerificationController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                             hintText: "Email Verification Code",
-                            icon: Icon(Icons.lock),                        
+                            icon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureVerificationCode
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _toggleVerificationCodeVisibility();
+                              },
+                          ),                        
                             // border:InputBorder.none,
                        ),
                       ),

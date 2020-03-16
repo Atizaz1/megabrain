@@ -54,6 +54,26 @@ class StateLocation
 
 class _RegistrationScreenState extends State<RegistrationScreen> {
 
+  bool _obscurePassword = true;
+
+  bool _obscureConfirmPassword = true;
+
+  void _togglePasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscureConfirmPassword = !_obscureConfirmPassword;
+    });
+  }
+
   List<String> getSuggestions(String query) 
   {
     List<String> matches = List();
@@ -983,12 +1003,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               else
                                 return null;
                           },
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           controller: passwordController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                               hintText: "Password",
                               icon: Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _togglePasswordVisibility();
+                              },
+                              ),
                               // border:InputBorder.none,
                          ),
                         ),
@@ -1010,12 +1041,23 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                               else
                                 return null;
                           },
-                          obscureText: true,
+                          obscureText: _obscureConfirmPassword,
                           controller: confirmPasswordController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                               hintText: "Confirm Password",
                               icon: Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _toggleConfirmPasswordVisibility();
+                              },
+                              ),
                               // border:InputBorder.none,
                          ),
                         ),
