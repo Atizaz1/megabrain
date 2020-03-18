@@ -596,48 +596,55 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     response = await http.post("http://megabrain-enem.com.br/API/api/auth/register",body:data);
 
-    jsonData = convert.jsonDecode(response.body);
+    // jsonData = convert.jsonDecode(response.body);
 
-    if(response.statusCode == 200)
-    {
+    // if(response.statusCode == 200)
+    // {
 
-      setState(() 
-      {
-        _isLoading = false;
-      });
+    //   setState(() 
+    //   {
+    //     _isLoading = false;
+    //   });
 
-      await sendMail(emailController.text);
+    //   if(_errors == null)
+    //   {
+    //     print("no errors");
 
-      _user = jsonData['user'];
+    //     await sendMail(emailController.text);
 
-      print(_user['userId']);
+    //     _user = jsonData['user'];
 
-      Fluttertoast.showToast(msg: 'You have registered successfully. Verify your account for use.');
+    //     print(_user['userId']);
 
-    }
-    else
-    {
-      setState(()
-      {
-        _isLoading = false;
-      });
+    //     Fluttertoast.showToast(msg: 'You have registered successfully. Verify your account for use.');
+    //   }
+    //   else
+    //   {
+    //     Fluttertoast.showToast(msg: 'Errors have been notified. Please correct the notified errors or check internet connectivity and try again.');
+    //   }
+
+    // }
+    // else
+    // {
+    //   setState(()
+    //   {
+    //     _isLoading = false;
+    //   });
       
-      print(jsonData);
+    //   print(jsonData);
 
-      Fluttertoast.showToast(msg: 'Errors have been notified. Please correct the notified errors or check internet connectivity and try again.');
+    //   Fluttertoast.showToast(msg: 'Errors have been notified. Please correct the notified errors or check internet connectivity and try again.');
                                         
-    }
+    // }
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = new GlobalKey<ScaffoldState>();
-
-
-
 
   String _errors;
   
   handleErrors(var json)
   {
+    _errors = null;
     if(json['errors'] != null)
     {
       if(json['errors']['email'] != null)
@@ -807,28 +814,52 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       }
       else
       {
-        await register(_password, _confirm_password, _course, _radioValue1, _borndate);
-
+        
         _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor:Colors.orange[500], content: Text('Processing. Please Wait!'),),);
 
-        if(response.statusCode  == 200 && _isMailSent == true) 
+        await register(_password, _confirm_password, _course, _radioValue1, _borndate);
+
+        jsonData = convert.jsonDecode(response.body);
+
+        if(response.statusCode  == 200) 
         {
+          setState(() 
+          {
+            _isLoading = false;
+          });
+
+          await sendMail(emailController.text);
+
+          _user = jsonData['user'];
+
+          print(_user['userId']);
+
+          Fluttertoast.showToast(msg: 'You have registered successfully. Verify your account for use.');
+          
+
           String userId = _user['userId'].toString();
+          
           Navigator.push(context, MaterialPageRoute(builder: (context)
           {
             return EmailVerify(userId);
-          }));          
+          }));
+
         }
-        else if(response.statusCode == 422)
+        else if(response.statusCode == 422 || response.statusCode != 200)
         {
+          setState(()
+          {
+            _isLoading = false;
+          });
+            
+          print(jsonData);
+
+          Fluttertoast.showToast(msg: 'Errors have been notified. Please correct the notified errors or check internet connectivity and try again.');
+
           await handleErrors(jsonData);
 
           showErrorMessages();
-          
-          _scaffoldKey.currentState.showSnackBar(SnackBar(backgroundColor: Colors.black87,content: Text('Unable to process. Invalid Information!', style: TextStyle(color: Colors.red,),),),);
-        }          
-        else
-        {
+
           if(_radioValue1 < 0)
           {
             Fluttertoast.showToast(msg: 'Please select your gender');
