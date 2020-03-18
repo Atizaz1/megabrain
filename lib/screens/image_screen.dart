@@ -1,7 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:megabrain/screens/solo_image_display_screen.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -9,6 +11,7 @@ import 'package:megabrain/screens/login_screen.dart';
 import 'package:megabrain/screens/topic_screen.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
+
 
 class ImageScreen extends StatefulWidget 
 {
@@ -57,6 +60,8 @@ class Area
 
 class _ImageScreenState extends State<ImageScreen> 
 {
+  int currentIndex;
+
   String ss_code;
 
   String ss_name;
@@ -82,6 +87,14 @@ class _ImageScreenState extends State<ImageScreen>
     topic_c   = t_code;
 
     topic_n   = t_name;
+  }
+
+  List<String> savedImagesList = new List<String>();
+
+  Future<bool> _setImage(String url)
+  {
+    savedImagesList.add(url);
+    return sharedPreferences.setStringList('IMG_LINK_LIST', savedImagesList);
   }
 
   SharedPreferences sharedPreferences;
@@ -197,8 +210,7 @@ class _ImageScreenState extends State<ImageScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        // leading: Icon(Icons.menu),
-        title: Text(topic_n,
+        title: Text('$topic_n Images',
         style: TextStyle(
           color: Colors.white,
         ),
@@ -265,37 +277,52 @@ class _ImageScreenState extends State<ImageScreen>
           icon: Icon(Icons.more_vert),
           offset: Offset(0, 100),
         )
-
         ],
       ),
       body: _isLoading ? Center(child: CircularProgressIndicator(
-        backgroundColor: Colors.orange[500],
-      )):
-      PhotoViewGallery.builder(
-      scrollPhysics: const BouncingScrollPhysics(),
-      builder: (BuildContext context, int index) {
-        return PhotoViewGalleryPageOptions(
-          imageProvider: NetworkImage(imagesLinkList[index]),
-          initialScale: PhotoViewComputedScale.contained * 0.8,
-        );
-      },
-      itemCount: (imagesLinkList == null || imagesLinkList.length == 0) ? 0 : imagesLinkList.length,
-      loadingBuilder: (context, event) => Center(
-        child: Container(
-          width: 20.0,
-          height: 20.0,
-          child: CircularProgressIndicator(
-            value: event == null
-                ? 0
-                : event.cumulativeBytesLoaded / event.expectedTotalBytes,
-          ),
+                  backgroundColor: Colors.orange[500],
+                )): Container(
+                  height: MediaQuery.of(context).size.height / 1,
+                color: Colors.grey[350],
+                child: 
+            GridView.builder(
+                shrinkWrap: true,
+                gridDelegate:
+                SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisSpacing: 16.0,
+                childAspectRatio: 0.6,
+                ),
+                itemCount: (imagesLinkList == null || imagesLinkList.length == 0) ? 0 : imagesLinkList.length,
+                itemBuilder: (context, index) 
+                {
+                  return GestureDetector(
+                    onLongPress: () async
+                    {
+                      print(imagesLinkList[index]);
+                      if (await _setImage(imagesLinkList[index]) == true)
+                      {
+                        Fluttertoast.showToast(msg: 'Image has been saved Successfully');
+                      }
+                      print(sharedPreferences.getStringList('IMG_LINK_LIST'));
+                    },
+                    onTap: () 
+                    {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                        return SoloImageScreen(imageLink: imagesLinkList[index]);
+                      }));
+                    },
+                    child: 
+                        CachedNetworkImage(
+                        imageUrl: imagesLinkList[index],
+                        placeholder: (context, url)        => CircularProgressIndicator(),
+                        errorWidget: (context, url, error) => Icon(Icons.error),
+                    )
+                  );
+                },
         ),
-      ),
-      // backgroundDecoration: widget.backgroundDecoration,
-      // pageController: widget.pageController,
-      // onPageChanged: onPageChanged,
-    )
-      
+      )  
     );
   }
 }

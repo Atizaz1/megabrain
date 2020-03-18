@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:megabrain/screens/saved_images_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
 import 'package:megabrain/screens/area_screen.dart';
@@ -232,6 +233,34 @@ class _HomeScreenState extends State<HomeScreen>
                       },
                       child: Text(
                         "Personal Information",
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),              
+                      ),
+                    ),
+                  ]
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>
+                  [ 
+                    Icon(
+                      Icons.image,
+                      color:Colors.black
+                    ),
+                    FlatButton(
+                      onPressed: ()
+                      {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) 
+                          {
+                            return SavedImageScreen();
+                          }));
+                      },
+                      child: Text(
+                        "Saved Images",
                         style: TextStyle(
                           color: Colors.black,
                         ),              
@@ -739,11 +768,13 @@ class MenuCard extends StatelessWidget
     return Column(
       crossAxisAlignment: CrossAxisAlignment.center,
       children: <Widget>[
-        Image.asset(
-        imageTitle != 'course_generic' ? 'images/$imageTitle.jpg' : 'images/$imageTitle.png',
-        width: 100.0,
-        height: 100.0,
+        Expanded(
+                  child: Image.asset(
+          imageTitle != 'course_generic' ? 'images/$imageTitle.jpg' : 'images/$imageTitle.png',
+          width: 180.0,
+          height: 180.0,
       ),
+        ),
         Center(
           child: Text(menuText,
           textAlign: TextAlign.center,
