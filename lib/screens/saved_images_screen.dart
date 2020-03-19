@@ -1,6 +1,9 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:megabrain/screens/solo_image_display_screen.dart';
+import 'package:megabrain/services/db_helper.dart';
+import 'package:megabrain/services/image_link.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
 
@@ -19,6 +22,12 @@ class _SavedImageScreenState extends State<SavedImageScreen>
 
   checkLoginStatus() async
   {
+    
+    setState(() 
+    {
+      _isLoading = true;
+    });
+
     sharedPreferences = await SharedPreferences.getInstance();
 
     print(sharedPreferences.get('token'));
@@ -31,36 +40,100 @@ class _SavedImageScreenState extends State<SavedImageScreen>
 
   List<String>  savedImagesList;
 
+  List<ImageLink> savedImagesLink;
+
+  var dbHelper;
 
   @override
   void initState()
   {
     super.initState();
-    setState(() 
-    {
-      _isLoading = true;
-    });
     checkLoginAndFetchDetails();
   }
 
-  void checkLoginAndFetchDetails() async
+  checkLoginAndFetchDetails() async
   {
+
     await checkLoginStatus();
-    fetchSavedImages();
+
+    dbHelper = new DBHelper();
+
+    await fetchSavedImages();
+    
   }
 
-  void fetchSavedImages() 
+  fetchSavedImages() async
   {
-    print(sharedPreferences.get('IMG_LINK_LIST'));
+    savedImagesLink  = await dbHelper.getAllRecordsByUser(sharedPreferences.getInt('logged_in_user_id').toString());
 
-    if(sharedPreferences.get('IMG_LINK_LIST') != null)
+    savedImagesList = new List<String>();
+
+    if(savedImagesLink != null && savedImagesLink.length > 0)
     {
-      savedImagesList = new List<String>();
-      savedImagesList = sharedPreferences.get('IMG_LINK_LIST');
+      for(var i = 0; i < savedImagesLink.length ; i++)
+      {
+        savedImagesList.add(savedImagesLink[i].link);
+      }
+
       print(savedImagesList);
+    }
+    
+    setState(() 
+    {
+      _isLoading = false;
+    });
+  }
+
+  void showDeletePrompt(String imgLink) 
+   {
+    showDialog(
+    context: context,
+    builder: (BuildContext context) 
+    {
+      return AlertDialog(
+        title: Text('Delete Image'),
+        content: Text('Do you want to delete this photo?'),
+        actions: <Widget>[
+          RaisedButton(
+            onPressed: () 
+            {
+              deleteImage(imgLink);
+              Navigator.pop(context);
+            },
+            child: Text('Yes'),
+          ),
+          RaisedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('No'),
+          ),
+        ],
+      );
+      
+    });
+  }
+
+  deleteImage(String imgLink) async 
+  {
+    int check = await dbHelper.deleteByLink(imgLink);
+
+    print("check");
+
+    print(check);
+
+    if(check > 0)
+    {
+      Fluttertoast.showToast(msg: 'Image has been deleted Successfully');
+      setState(() {
+        _isLoading = true;
+      });
+      fetchSavedImages();
       setState(() {
         _isLoading = false;
       });
+    }
+    else
+    {
+      Fluttertoast.showToast(msg: 'Image has already been deleted');
     }
   }
 
@@ -138,10 +211,10 @@ class _SavedImageScreenState extends State<SavedImageScreen>
         )
         ],
       ),
-      body: (savedImagesList == null || savedImagesList.length == 0) ? Center(child: Text('No Saved Images Found'),) : Container(
+      body: _isLoading ? Center(child: CircularProgressIndicator(),) : Container(
             height: MediaQuery.of(context).size.height / 1,
             color: Colors.grey[350],
-            child: 
+            child: (savedImagesList == null || savedImagesList.length == 0) ? Center(child:Text('No Saved Images are Found', style: TextStyle(color: Colors.black),)) :
             GridView.builder(
                 shrinkWrap: true,
                 gridDelegate:
@@ -154,9 +227,9 @@ class _SavedImageScreenState extends State<SavedImageScreen>
                 itemBuilder: (context, index) 
                 {
                   return GestureDetector(
-                    onLongPress: ()
-                    {
-
+                    onLongPress: ()async
+                    {                      
+                      showDeletePrompt(savedImagesList[index]);
                     },
                     onTap: () 
                     {

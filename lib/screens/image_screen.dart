@@ -4,6 +4,9 @@ import 'package:extended_image/extended_image.dart';
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:megabrain/screens/solo_image_display_screen.dart';
+import 'package:megabrain/services/db_helper.dart';
+import 'package:megabrain/services/image_link.dart';
+import 'package:megabrain/services/storage_util.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:photo_view/photo_view_gallery.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -121,12 +124,15 @@ class _ImageScreenState extends State<ImageScreen>
     }
   }
 
+  var dbHelper;
+
   @override
   void initState()
   {
     super.initState();
     checkLoginAndFetchDetails();
     setImagePreReq(widget.subjectCode, widget.subjectName, widget.area_code, widget.area_name, widget.topic_code, widget.topic_name);
+    dbHelper = new DBHelper();
   }
   
   List<String> imagesLinkList;
@@ -203,6 +209,64 @@ class _ImageScreenState extends State<ImageScreen>
 
       Fluttertoast.showToast(msg: 'No Images were Found Related to Selected Topic');
                                         
+    }
+  }
+
+  void showSavePrompt(String imgLink) 
+   {
+    showDialog(
+    context: context,
+    builder: (BuildContext context) 
+    {
+      return AlertDialog(
+        title: Text('Save Image'),
+        content: Text('Do you want to save this photo?'),
+        actions: <Widget>[
+          RaisedButton(
+            onPressed: () 
+            {
+              saveImage(imgLink);
+              Navigator.pop(context);
+            },
+            child: Text('Yes'),
+          ),
+          RaisedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('No'),
+          ),
+        ],
+      );
+      
+    });
+  }
+
+  saveImage(String imgLink) async 
+  {
+    int check = await dbHelper.findIfExistsByUser(imgLink, sharedPreferences.getInt('logged_in_user_id').toString());
+
+    print("check");
+
+    print(check);
+
+    if(check <= 0)
+    {
+      
+      var imageLink = new ImageLink(imgLink, sharedPreferences.getInt('logged_in_user_id'));
+
+      ImageLink imglnk = await dbHelper.create(imageLink);
+
+      if(imglnk != null)
+      {
+        Fluttertoast.showToast(msg: 'Image has been saved Successfully');
+      }
+      else
+      {
+        Fluttertoast.showToast(msg: 'We are having trouble with saving image. Please try again after sometime.');
+      }
+    }
+    else
+    {
+      Fluttertoast.showToast(msg: 'Image has already been saved');
     }
   }
 
@@ -284,7 +348,7 @@ class _ImageScreenState extends State<ImageScreen>
                 )): Container(
                   height: MediaQuery.of(context).size.height / 1,
                 color: Colors.grey[350],
-                child: 
+                child: (imagesLinkList == null || imagesLinkList.length == 0) ? Center(child:Text('No Images Here', style: TextStyle(color: Colors.black),)) : 
             GridView.builder(
                 shrinkWrap: true,
                 gridDelegate:
@@ -298,13 +362,8 @@ class _ImageScreenState extends State<ImageScreen>
                 {
                   return GestureDetector(
                     onLongPress: () async
-                    {
-                      print(imagesLinkList[index]);
-                      if (await _setImage(imagesLinkList[index]) == true)
-                      {
-                        Fluttertoast.showToast(msg: 'Image has been saved Successfully');
-                      }
-                      print(sharedPreferences.getStringList('IMG_LINK_LIST'));
+                    {                      
+                      showSavePrompt(imagesLinkList[index]);
                     },
                     onTap: () 
                     {

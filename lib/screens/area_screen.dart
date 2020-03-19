@@ -261,7 +261,9 @@ class _AreaScreenState extends State<AreaScreen>
                           child: Container(
                   child: _isLoading ? Center(child: CircularProgressIndicator(
                     backgroundColor: Colors.orange[500],
-                  )):ListView.separated(
+                  ))
+                  :(areaList == null || areaList.length == 0) ? Center(child:Text('No Subject Areas Found', style: TextStyle(color: Colors.black),)) 
+                  :ListView.separated(
                   itemCount: (areaList == null || areaList.length == 0) ? 0 : areaList.length,
                   itemBuilder: (context, index) 
                   {

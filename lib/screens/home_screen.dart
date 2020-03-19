@@ -89,6 +89,7 @@ class _HomeScreenState extends State<HomeScreen>
   {
     await checkLoginStatus();
     await fetchSubjectList();
+    await fetchUserData();
   }
 
   List<Subject> subjectFromJson(String str) 
@@ -99,6 +100,62 @@ class _HomeScreenState extends State<HomeScreen>
   String subjectToJson(List<Subject> data) 
   {
     return convert.jsonEncode(List<dynamic>.from(data.map((x) => x.toJson())));
+  }
+
+  var userResponse;
+
+  var userJsonData;
+
+  var _user;
+
+  fetchUserData() async
+  {
+    setState(() 
+    {
+      _isLoading = true;
+    });
+
+
+    print(sharedPreferences.get('token'));
+
+    String token = sharedPreferences.get('token');
+
+    Map<String,String> authorizationHeaders=
+    {
+      'Content-Type'  : 'application/json',
+      'Accept'        : 'application/json',
+      'Authorization' : 'Bearer $token',
+    };
+
+    userResponse = await http.post("http://megabrain-enem.com.br/API/api/auth/me",headers: authorizationHeaders);
+
+    userJsonData = convert.jsonDecode(userResponse.body);
+
+    if(userResponse.statusCode == 200)
+    {
+
+      setState(() 
+      {
+        _isLoading = false;
+      });
+
+      _user = userJsonData;
+
+      sharedPreferences.setInt('logged_in_user_id', _user['userId']);
+
+      print(sharedPreferences.getInt('logged_in_user_id'));
+
+    }
+    else
+    {
+      setState(()
+      {
+        _isLoading = false;
+      });
+      
+      print(userJsonData);
+                                        
+    }
   }
 
   fetchSubjectList() async 
@@ -296,133 +353,210 @@ class _HomeScreenState extends State<HomeScreen>
                 height: 1.0,
                 color: Colors.grey,
               ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/biol.jpg'),
-                title: Text('Biology',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
+              _isLoading ? 
+               Center(child: CircularProgressIndicator(
+                  backgroundColor: Colors.orange[500],
+                )): 
+                Container(
+                  height: double.maxFinite,
+                  child: ListView.builder(
+                    // shrinkWrap: ,
+                      itemCount: (subjectList == null || subjectList.length == 0) ? 0 : subjectList.length,
+                      itemBuilder: (context, index) 
+                      {
+                        return GestureDetector(
+                          onTap: () 
+                          {
+                            Navigator.push(context, MaterialPageRoute(builder: (context) {
+                              return AreaScreen(subjectCode: subjectList[index].ssCode.toString(), subjectName: subjectList[index].ssName,);
+                            }));
+                          },
+                          child: Card(
+                            color: Colors.grey[100],
+                              child: ListTile(
+                                leading: Image.asset(
+                            subjectList[index].ssName == 'BIOLOGIA' ? 'images/biol.jpg' : 
+                            subjectList[index].ssName == 'FÍSICA' ? 'images/physics.jpg': 
+                            subjectList[index].ssName == 'MATEMÁTICA' ? 'images/math.jpg' : 
+                            subjectList[index].ssName == 'QUÍMICA' ? 'images/chem.jpg' : 'images/course_generic.png' 
+                                ),
+                              title: Text(
+                                subjectList[index].ssName,
+                                style: TextStyle(
+                                  color: Colors.black
+                                ),
+                              ),
+                              // trailing: Icon(Icons.keyboard_arrow_right,
+                              // color:Colors.black
+                              // ),
+                            ),
+                          ),
+                        );
+                      }, 
+                      // separatorBuilder: (BuildContext context, int index) 
+                      // {
+                      //     return Divider();
+                      // }, 
+                      
+                    // Container(
+                    // height: double.maxFinite,
+                    // child:GridView.builder(
+                    // shrinkWrap: true,
+                    // gridDelegate:
+                    // SliverGridDelegateWithFixedCrossAxisCount(
+                    //                    crossAxisCount: 1
+                    // ),
+                    // itemCount: (subjectList == null || subjectList.length == 0) ? 0 : subjectList.length,
+                    // itemBuilder: (context, index) 
+                    // {
+                    //   return GestureDetector(
+                    //     onTap: () 
+                    //     {
+                    //       print("tapped");
+                    //       Navigator.push(context, MaterialPageRoute(builder: (context) 
+                    //       {
+                    //         return AreaScreen(subjectCode: subjectList[index].ssCode.toString(), subjectName: subjectList[index].ssName,);
+                    //       }));
+                    //     },
+                    //     child: 
+                    //         MenuCard(imageTitle: 
+                            // subjectList[index].ssName == 'BIOLOGIA' ? 'biol' : 
+                            // subjectList[index].ssName == 'FÍSICA' ? 'physics': 
+                            // subjectList[index].ssName == 'MATEMÁTICA' ? 'math' : 
+                            // subjectList[index].ssName == 'QUÍMICA' ? 'chem' : 'course_generic' , 
+                    //         menuText: subjectList[index].ssName 
+                    //         ),
+                    //   );
+                    // }, ),
+              ),
                 ),
-                ),
-                onTap: () {
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/biol.jpg'),
+              //   title: Text('Biology',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/chem.jpg'),
-                title: Text('Chemistry',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/chem.jpg'),
+              //   title: Text('Chemistry',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/math.jpg'),
-                title: Text('Maths',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/math.jpg'),
+              //   title: Text('Maths',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/physics.jpg'),
-                title: Text('Physics',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/physics.jpg'),
+              //   title: Text('Physics',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/library_add_check.png'),
-                title: Text('Remember',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/library_add_check.png'),
+              //   title: Text('Remember',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/config.png'),
-                title: Text('Configuration',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/config.png'),
+              //   title: Text('Configuration',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: Image.asset('images/news.png',
-                width: 55.0,),
-                title: Text('News',
-                style: TextStyle(
-                  color: Colors.black,
-                  fontSize: 20.0,
-                ),
-                ),
-                onTap: () {
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
+              // ListTile(
+              //   contentPadding: EdgeInsets.zero,
+              //   leading: Image.asset('images/news.png',
+              //   width: 55.0,),
+              //   title: Text('News',
+              //   style: TextStyle(
+              //     color: Colors.black,
+              //     fontSize: 20.0,
+              //   ),
+              //   ),
+              //   onTap: () {
 
-                  Navigator.pop(context);
-                },
-              ),
-              Divider(
-                height: 1.0,
-                color: Colors.grey,
-              ),
+              //     Navigator.pop(context);
+              //   },
+              // ),
+              // Divider(
+              //   height: 1.0,
+              //   color: Colors.grey,
+              // ),
             ],
         ),
           ),

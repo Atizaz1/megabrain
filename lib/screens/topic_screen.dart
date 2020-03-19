@@ -290,7 +290,9 @@ class _TopicScreenState extends State<TopicScreen>
                         color: Colors.grey[350],
                         child: _isLoading ? Center(child: CircularProgressIndicator(
                           backgroundColor: Colors.orange[500],
-                        )):ListView.separated(
+                        ))
+                        :(topicList == null || topicList.length == 0) ? Center(child:Text('No Subject Area Topics Found', style: TextStyle(color: Colors.black),)) 
+                        :ListView.separated(
                         itemCount: (topicList == null || topicList.length == 0) ? 0 : topicList.length,
                         itemBuilder: (context, index) 
                         {

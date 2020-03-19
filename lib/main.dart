@@ -8,7 +8,8 @@ import 'package:megabrain/screens/home_screen.dart';
 
 void main() => runApp(MegaBrain());
 
-class MegaBrain extends StatelessWidget {
+class MegaBrain extends StatelessWidget 
+{
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
