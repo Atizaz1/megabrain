@@ -17,6 +17,15 @@ class LoginScreen extends StatefulWidget
 
 class _LoginScreenState extends State<LoginScreen> 
 {
+  bool _obscurePassword = true;
+
+  void _togglePasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
 
   TextEditingController emailController    = new TextEditingController();
 
@@ -68,6 +77,34 @@ class _LoginScreenState extends State<LoginScreen>
 
   }
 
+  SharedPreferences sharedPreferences;
+
+  void initState()
+  {
+    super.initState();
+    setRememberedDetail();
+  }
+
+  Future<bool> rememberMe(String email) async
+  {
+    if(email != null)
+    {
+      return sharedPreferences.setString('user_email', email);
+    }
+  }
+
+  void setRememberedDetail() async
+  {
+    sharedPreferences = await SharedPreferences.getInstance();
+
+    String userEmail = sharedPreferences.getString('user_email');
+
+    if(userEmail != null)
+    {
+      emailController.text = userEmail;
+    }
+  }
+
   getToken(Map data) async
   {
     setState(() 
@@ -81,8 +118,6 @@ class _LoginScreenState extends State<LoginScreen>
       'id'       : data['id'].toString(),
       'name'     : data['name'].toString(),
     };
-
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
     response = await http.post("http://megabrain-enem.com.br/API/api/socialSignUp",body:socialData);
 
@@ -111,6 +146,12 @@ class _LoginScreenState extends State<LoginScreen>
 
   signIn(String email, String password) async
   {
+    if(temp == true)
+    {
+      await rememberMe(email);
+      print(sharedPreferences.get('user_email'));
+    }
+
     setState(() 
     {
       _isLoading = true;
@@ -120,8 +161,6 @@ class _LoginScreenState extends State<LoginScreen>
       'email'    : email,
       'password' : password,
     };
-
-    SharedPreferences sharedPreferences = await SharedPreferences.getInstance();
 
     response = await http.post("http://megabrain-enem.com.br/API/api/auth/login",body:data);
 
@@ -175,8 +214,8 @@ class _LoginScreenState extends State<LoginScreen>
               : Form(
                 key: _formKey,
                   child: Wrap(
-                  spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 4.0, 
+                  // spacing: 8.0, // gap between adjacent chips
+                  // runSpacing: 4.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
@@ -233,12 +272,23 @@ class _LoginScreenState extends State<LoginScreen>
                                 }
                                 return null;
                               },
-                        obscureText: true,
+                        obscureText: _obscurePassword,
                         controller: passwordController,
                         decoration: InputDecoration(
                             contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                             hintText: "Password",
                             icon: Icon(Icons.lock),
+                            suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _togglePasswordVisibility();
+                              },
+                            ),
                             // border:InputBorder.none,
                        ),
                       ),
@@ -252,7 +302,8 @@ class _LoginScreenState extends State<LoginScreen>
                           children: <Widget>[
                             Checkbox(
                                 value: temp,
-                                onChanged: (bool newValue) {
+                                onChanged: (bool newValue) 
+                                {
                                   setState(() {
                                     temp = newValue;
                                   });

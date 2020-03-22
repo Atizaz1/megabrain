@@ -412,6 +412,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     ..subject = 'Verify Account'
     ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 
 
+    Fluttertoast.showToast(msg: 'Processing your registration Request. Please Wait');
+
     await transport.send(envelope)
     .then((_)
     {
@@ -423,6 +425,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     .catchError((e) 
     { 
       print('Error: $e');
+
+      Fluttertoast.showToast(msg: 'Registration Email could not be send. $e');
       
       _isMailSent = false;
 
@@ -836,7 +840,6 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
           Fluttertoast.showToast(msg: 'You have registered successfully. Verify your account for use.');
           
-
           String userId = _user['userId'].toString();
           
           Navigator.push(context, MaterialPageRoute(builder: (context)

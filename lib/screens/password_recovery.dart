@@ -247,6 +247,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
                                 {
                                   return 'Please enter your email address';
                                 }
+                                else
                                 return null;
                         },
                         obscureText: false,
@@ -283,6 +284,10 @@ class _PasswordVerifyState extends State<PasswordVerify>
                               // Navigator.pushNamed(context,"home_screen");
                               Future.delayed(const Duration(milliseconds: 2500), () 
                               {
+                                setState(() 
+                                {
+                                    _isLoading = false;
+                                });
 
                                 Scaffold.of(context)
                                   .showSnackBar(SnackBar(

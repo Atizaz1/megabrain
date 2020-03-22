@@ -43,7 +43,7 @@ class _HomeScreenState extends State<HomeScreen>
   _logout()
   {
     facebookLogin.logOut();
-    sharedPreferences.clear();
+    sharedPreferences.remove('token');
     sharedPreferences.commit();
     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
   }
