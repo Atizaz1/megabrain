@@ -142,13 +142,13 @@ class _NewPasswordState extends State<NewPassword>
               child: Form(
                 key: _formKey,
                   child: Wrap(
-                  spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 1.0, 
+                  // spacing: 8.0, // gap between adjacent chips
+                  // runSpacing: 1.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
                             "images/applogo.png",
-                            height: 150.0,
+                            height: 120.0,
                         ),
                       ),
                       Center(
@@ -232,7 +232,7 @@ class _NewPasswordState extends State<NewPassword>
                             // border:InputBorder.none,
                        ),
                       ),
-                      SizedBox(height: 10.0),
+                      SizedBox(height: 65.0),
                     Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[

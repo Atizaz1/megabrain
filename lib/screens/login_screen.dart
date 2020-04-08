@@ -220,7 +220,7 @@ class _LoginScreenState extends State<LoginScreen>
                       Center(
                         child: Image.asset(
                             "images/applogo.png",
-                            height: 150.0,
+                            height: 120.0,
                         ),
                       ),
                       Center(
@@ -229,7 +229,7 @@ class _LoginScreenState extends State<LoginScreen>
                         textAlign: TextAlign.center,
                         style: TextStyle(
                         color:Colors.orange[500],
-                        fontSize: 30.0,
+                        fontSize: 25.0,
                         ),
                       ),
                       ),
@@ -244,7 +244,7 @@ class _LoginScreenState extends State<LoginScreen>
                         ),
                       ),
                       ),
-                      SizedBox(height: 45.0),
+                      SizedBox(height: 25.0),
                       TextFormField(
                         validator: (value) 
                         {

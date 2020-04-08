@@ -163,10 +163,20 @@ class _AreaScreenState extends State<AreaScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$ss_name  Areas',
-        style: TextStyle(
-          color: Colors.white,
-        ),
+        title: Row(
+          children: <Widget>[
+            CircleAvatar(
+              radius: 25,
+              backgroundColor: Colors.red,
+                      backgroundImage: AssetImage(ss_name == 'BIOLOGIA' ? 'images/biol.jpg' : 
+              ss_name == 'FÍSICA' ? 'images/physics.jpg':
+              ss_name == 'MATEMÁTICA' ? 'images/math.jpg' :
+              ss_name == 'QUÍMICA' ? 'images/chem.jpg' : 'images/course_generic.png',
+              ),
+            ),
+            SizedBox(width: 10,),
+            Text(ss_name),
+          ],
         ),
         backgroundColor: Colors.orange,
         actions: <Widget>
@@ -238,25 +248,25 @@ class _AreaScreenState extends State<AreaScreen>
         color: Colors.grey[300],
         child: Column(
           children: <Widget>[
-            Card(
-              child: ListTile(
-                leading: Image.asset('images/applogo2.png',
-                width: 60.0,
-                height: 60.0,
-                ),
-                title: Text('MegaBrain ENEM',
-                style: TextStyle(
-                  fontSize: 25.0,
-                  color: Colors.black,
-                  fontWeight: FontWeight.bold,
-                ),
-                ),
-                onTap: (){
+            // Card(
+            //   child: ListTile(
+            //     leading: Image.asset('images/applogo2.png',
+            //     width: 60.0,
+            //     height: 60.0,
+            //     ),
+            //     title: Text('MegaBrain ENEM',
+            //     style: TextStyle(
+            //       fontSize: 25.0,
+            //       color: Colors.black,
+            //       fontWeight: FontWeight.bold,
+            //     ),
+            //     ),
+            //     onTap: (){
 
-                },
-              ),
-              color: Colors.orange[500],
-              ),
+            //     },
+            //   ),
+            //   color: Colors.orange[500],
+            //   ),
             Expanded(
                           child: Container(
                   child: _isLoading ? Center(child: CircularProgressIndicator(
@@ -274,24 +284,21 @@ class _AreaScreenState extends State<AreaScreen>
                           return TopicScreen(subjectCode: ss_code,subjectName: ss_name,area_code: areaList[index].areaCode.toString(),area_name: areaList[index].areaName);
                         }));
                       },
-                      child: Card(
-                        color: Colors.grey[300],
-                          child: ListTile(
-                          title: Text(
-                            areaList[index].areaName,
-                            style: TextStyle(
-                              color: Colors.black
-                            ),
-                          ),
-                          trailing: Icon(Icons.keyboard_arrow_right,
-                          color:Colors.black
-                          ),
+                      child: ListTile(
+                      title: Text(
+                        areaList[index].areaName,
+                        style: TextStyle(
+                          color: Colors.black
                         ),
                       ),
+                      trailing: Icon(Icons.keyboard_arrow_right,
+                      color:Colors.black
+                      ),
+                        ),
                     );
                   }, separatorBuilder: (BuildContext context, int index) 
                   {
-                      return Divider();
+                      return Divider(thickness: 1,color:Colors.grey[500]);
                   }, 
                   ),
                 ),

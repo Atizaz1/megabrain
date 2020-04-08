@@ -1,5 +1,6 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:megabrain/screens/saved_images_screen.dart';
 import 'package:photo_view/photo_view.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
@@ -129,6 +130,34 @@ class _SoloImageScreenState extends State<SoloImageScreen>
                       },
                       child: Text(
                         "Personal Information",
+                        style: TextStyle(
+                          color: Colors.black,
+                        ),              
+                      ),
+                    ),
+                  ]
+                  ),
+                ),
+                PopupMenuItem(
+                  value: 2,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                  children: <Widget>
+                  [ 
+                    Icon(
+                      Icons.image,
+                      color:Colors.black
+                    ),
+                    FlatButton(
+                      onPressed: ()
+                      {
+                          Navigator.push(context, MaterialPageRoute(builder: (context) 
+                          {
+                            return SavedImageScreen();
+                          }));
+                      },
+                      child: Text(
+                        "Saved Images",
                         style: TextStyle(
                           color: Colors.black,
                         ),              

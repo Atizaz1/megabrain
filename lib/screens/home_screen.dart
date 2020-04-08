@@ -7,6 +7,8 @@ import 'package:megabrain/screens/area_screen.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 
+import 'news_screen.dart';
+
 class HomeScreen extends StatefulWidget 
 {
   @override
@@ -298,34 +300,34 @@ class _HomeScreenState extends State<HomeScreen>
                   ]
                   ),
                 ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>
-                  [ 
-                    Icon(
-                      Icons.image,
-                      color:Colors.black
-                    ),
-                    FlatButton(
-                      onPressed: ()
-                      {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) 
-                          {
-                            return SavedImageScreen();
-                          }));
-                      },
-                      child: Text(
-                        "Saved Images",
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),              
-                      ),
-                    ),
-                  ]
-                  ),
-                ),
+                // PopupMenuItem(
+                //   value: 2,
+                //   child: Row(
+                //     mainAxisAlignment: MainAxisAlignment.center,
+                //   children: <Widget>
+                //   [ 
+                //     Icon(
+                //       Icons.image,
+                //       color:Colors.black
+                //     ),
+                //     FlatButton(
+                //       onPressed: ()
+                //       {
+                //           Navigator.push(context, MaterialPageRoute(builder: (context) 
+                //           {
+                //             return SavedImageScreen();
+                //           }));
+                //       },
+                //       child: Text(
+                //         "Saved Images",
+                //         style: TextStyle(
+                //           color: Colors.black,
+                //         ),              
+                //       ),
+                //     ),
+                //   ]
+                //   ),
+                // ),
               ],
           icon: Icon(Icons.more_vert),
           offset: Offset(0, 100),
@@ -872,8 +874,46 @@ class _HomeScreenState extends State<HomeScreen>
                       fontWeight: FontWeight.bold,
                     ),
                     ),
-                    onTap: (){
-
+                    onTap: ()
+                    {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                        return NewsScreen();
+                      }));
+                    },
+                  ),
+                ),
+              ),
+              color: color,
+              ),
+              SizedBox(height: 5.0),
+              Card(
+              child: Padding(
+                
+                padding: const EdgeInsets.all(15.0),
+                child: FlatButton(
+                  onPressed: (){
+                    
+                  },
+                  padding: EdgeInsets.zero,
+                    child: ListTile(
+                    leading: Image.asset('images/saved-images.png',
+                    width: 200.0,
+                    height: 60.0,
+                    ),
+                    title: Text('SAVED IMAGES',
+                    style:TextStyle(
+                      fontSize: 15.0,
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    ),
+                    onTap: ()
+                    {
+                      Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                            return SavedImageScreen();
+                      }));
                     },
                   ),
                 ),

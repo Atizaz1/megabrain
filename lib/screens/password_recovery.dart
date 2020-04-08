@@ -209,8 +209,8 @@ class _PasswordVerifyState extends State<PasswordVerify>
               child: Form(
                 key: _formKey,
                   child: Wrap(
-                  spacing: 8.0, // gap between adjacent chips
-                  runSpacing: 1.0, 
+                  // spacing: 8.0, // gap between adjacent chips
+                  // runSpacing: 1.0, 
                     children: <Widget>[
                       Center(
                         child: Image.asset(
@@ -259,7 +259,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
                             // border:InputBorder.none,
                        ),
                       ),
-                      SizedBox(height: 25.0),
+                      SizedBox(height: 65.0),
                     Row(
                   mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: <Widget>[
