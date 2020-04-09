@@ -213,7 +213,7 @@ class _LoginScreenState extends State<LoginScreen>
               ) 
               : Form(
                 key: _formKey,
-                  child: Wrap(
+                  child: ListView(
                   // spacing: 8.0, // gap between adjacent chips
                   // runSpacing: 4.0, 
                     children: <Widget>[

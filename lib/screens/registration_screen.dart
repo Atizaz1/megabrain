@@ -52,6 +52,32 @@ class StateLocation
     };
 }
 
+class RandomDigits {
+  static const MaxNumericDigits = 17;
+  static final _random = Random();
+
+  static int getInteger(int digitCount) {
+    if (digitCount > MaxNumericDigits || digitCount < 1) throw new RangeError.range(0, 1, MaxNumericDigits, "Digit Count");
+    var digit = _random.nextInt(9) + 1;  // first digit must not be a zero
+    int n = digit;
+
+    for (var i = 0; i < digitCount - 1; i++) {
+      digit = _random.nextInt(10);
+      n *= 10;
+      n += digit;
+    }
+    return n;
+  }
+
+  static String getString(int digitCount) {
+    String s = "";
+    for (var i = 0; i < digitCount; i++) {
+      s += _random.nextInt(10).toString();
+    }
+    return s;
+  }
+}
+
 class _RegistrationScreenState extends State<RegistrationScreen> {
 
   bool _obscurePassword = true;
@@ -553,7 +579,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
       gender = 'Female';
     }
     
-    verifyToken = createCryptoRandomString(6);
+    // verifyToken = createCryptoRandomString(6);
+    verifyToken = RandomDigits.getInteger(4).toString();
 
     Map data = 
     {

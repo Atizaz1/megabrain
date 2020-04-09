@@ -54,6 +54,26 @@ class PersonalInformation extends StatefulWidget
 class _PersonalInformationState extends State<PersonalInformation> 
 {
 
+  bool _obscurePassword = true;
+
+  bool _obscureConfirmPassword = true;
+
+  void _togglePasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscurePassword = !_obscurePassword;
+    });
+  }
+
+  void _toggleConfirmPasswordVisibility() 
+  {
+    setState(() 
+    {
+      _obscureConfirmPassword = !_obscureConfirmPassword;
+    });
+  }
+
   List<String> getSuggestions(String query) 
   {
     List<String> matches = List();
@@ -232,7 +252,9 @@ class _PersonalInformationState extends State<PersonalInformation>
 
     fullnameController.text = _user['fullname'];
 
-    bornDateController.text = _user['borndate'];
+    var tempDate = DateTime.parse(_user['borndate']);
+
+    bornDateController.text = dateFormatter.format(tempDate);
 
     courseController.text   = _user['course'];
 
@@ -1094,12 +1116,23 @@ class _PersonalInformationState extends State<PersonalInformation>
                             else
                               return null;
                           },
-                          obscureText: true,
+                          obscureText: _obscurePassword,
                           controller: passwordController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                               hintText: "Password",
                               icon: Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscurePassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _togglePasswordVisibility();
+                              },
+                              ),
                               // border:InputBorder.none,
                          ),
                         ),
@@ -1117,12 +1150,23 @@ class _PersonalInformationState extends State<PersonalInformation>
                             else
                               return null;
                           },
-                          obscureText: true,
+                          obscureText: _obscureConfirmPassword,
                           controller: confirmPasswordController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
                               hintText: "Confirm Password",
                               icon: Icon(Icons.lock),
+                              suffixIcon: IconButton(
+                              icon: Icon(
+                                _obscureConfirmPassword
+                                ? Icons.visibility_off
+                                : Icons.visibility,
+                                ),
+                              onPressed: () 
+                              {
+                                _toggleConfirmPasswordVisibility();
+                              },
+                              ),
                               // border:InputBorder.none,
                          ),
                         ),

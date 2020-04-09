@@ -141,7 +141,7 @@ class _NewPasswordState extends State<NewPassword>
               padding: EdgeInsets.symmetric(horizontal: 24.0),
               child: Form(
                 key: _formKey,
-                  child: Wrap(
+                  child: ListView(
                   // spacing: 8.0, // gap between adjacent chips
                   // runSpacing: 1.0, 
                     children: <Widget>[

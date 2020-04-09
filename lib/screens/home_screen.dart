@@ -355,6 +355,53 @@ class _HomeScreenState extends State<HomeScreen>
                 height: 1.0,
                 color: Colors.grey,
               ),
+              Card(
+                  color:Colors.grey[100],
+                  child: ListTile(
+                  // contentPadding: EdgeInsets.zero,
+                  leading: Image.asset('images/news.png',
+                  width: 55.0,),
+                  title: Text('News',
+                  style: TextStyle(
+                    color: Colors.black,
+                    // fontSize: 20.0,
+                  ),
+                  ),
+                  onTap: () {
+
+                    // Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                        return NewsScreen();
+                      }));
+                  },
+                ),
+              ),
+
+              Card(
+                  color:Colors.grey[100],
+                  child: ListTile(
+                  // contentPadding: EdgeInsets.zero,
+                  leading: Image.asset('images/saved-images.png',
+                  width: 55.0,),
+                  title: Text('Saved Images',
+                  style: TextStyle(
+                    color: Colors.black,
+                    // fontWeight: FontWeight.bold,
+                    // fontSize: 20.0,
+                  ),
+                  ),
+                  onTap: () {
+
+                    // Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                        return SavedImageScreen();
+                      }));
+                  },
+                ),
+              ),
+              
               _isLoading ? 
                Center(child: CircularProgressIndicator(
                   backgroundColor: Colors.orange[500],
@@ -362,6 +409,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Container(
                   height: double.maxFinite,
                   child: ListView.builder(
+                    padding: EdgeInsets.zero,
                     // shrinkWrap: ,
                       itemCount: (subjectList == null || subjectList.length == 0) ? 0 : subjectList.length,
                       itemBuilder: (context, index) 
@@ -568,7 +616,7 @@ class _HomeScreenState extends State<HomeScreen>
         color: Colors.grey[300],
         child: Padding(
             padding: EdgeInsets.all(0.0),
-            child: Wrap(
+            child: ListView(
               children:<Widget>[ 
               Card(
               child: ListTile(
@@ -856,7 +904,7 @@ class _HomeScreenState extends State<HomeScreen>
               Card(
               child: Padding(
                 
-                padding: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(5.0),
                 child: FlatButton(
                   onPressed: (){
                     
@@ -890,7 +938,7 @@ class _HomeScreenState extends State<HomeScreen>
               Card(
               child: Padding(
                 
-                padding: const EdgeInsets.all(15.0),
+                padding: const EdgeInsets.all(5.0),
                 child: FlatButton(
                   onPressed: (){
                     

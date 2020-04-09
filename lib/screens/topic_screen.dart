@@ -260,25 +260,25 @@ class _TopicScreenState extends State<TopicScreen>
         color: Colors.grey[300],
         child: Column(
           children: <Widget>[
-            // Card(
-            //     child: ListTile(
-            //       leading: Image.asset('images/applogo2.png',
-            //       width: 60.0,
-            //       height: 60.0,
-            //       ),
-            //       title: Text('MegaBrain ENEM',
-            //       style: TextStyle(
-            //         fontSize: 25.0,
-            //         color: Colors.black,
-            //         fontWeight: FontWeight.bold,
-            //       ),
-            //       ),
-            //       onTap: (){
+            Card(
+                child: ListTile(
+                  leading: Image.asset('images/applogo2.png',
+                  width: 60.0,
+                  height: 60.0,
+                  ),
+                  title: Text('MegaBrain ENEM',
+                  style: TextStyle(
+                    fontSize: 25.0,
+                    color: Colors.black,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  ),
+                  onTap: (){
 
-            //       },
-            //     ),
-            //     color: Colors.orange[500],
-            //     ),
+                  },
+                ),
+                color: Colors.orange[500],
+                ),
             Expanded(
                         child: Container(
                 height: MediaQuery.of(context).size.height / 1,
