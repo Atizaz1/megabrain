@@ -73,105 +73,105 @@ class _SoloImageScreenState extends State<SoloImageScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        // leading: Icon(Icons.menu),
-        title: Text('Image Display',
-        style: TextStyle(
-          color: Colors.white,
-        ),
-        ),
-        backgroundColor: Colors.orange,
-        actions: <Widget>
-        [
-          PopupMenuButton<int>(
-            color: Colors.white,
-          itemBuilder: (context) => [
-                PopupMenuItem(
-                  value: 1,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>
-                  [ 
-                    Icon(
-                      Icons.power,
-                      color:Colors.black
-                    ),
-                    FlatButton(
-                      onPressed: ()
-                      {
-                          sharedPreferences.clear();
-                          sharedPreferences.commit();
-                          Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
-                      },
-                      child: Text(
-                        "LogOut",
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),              
-                      ),
-                    ),
-                  ]
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>
-                  [ 
-                    Icon(
-                      Icons.book,
-                      color:Colors.black
-                    ),
-                    FlatButton(
-                      onPressed: ()
-                      {
-                          Navigator.pushNamed(context, 'personal_information');
-                      },
-                      child: Text(
-                        "Personal Information",
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),              
-                      ),
-                    ),
-                  ]
-                  ),
-                ),
-                PopupMenuItem(
-                  value: 2,
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>
-                  [ 
-                    Icon(
-                      Icons.image,
-                      color:Colors.black
-                    ),
-                    FlatButton(
-                      onPressed: ()
-                      {
-                          Navigator.push(context, MaterialPageRoute(builder: (context) 
-                          {
-                            return SavedImageScreen();
-                          }));
-                      },
-                      child: Text(
-                        "Saved Images",
-                        style: TextStyle(
-                          color: Colors.black,
-                        ),              
-                      ),
-                    ),
-                  ]
-                  ),
-                ),
-              ],
-          icon: Icon(Icons.more_vert),
-          offset: Offset(0, 100),
-        )
-        ],
-      ),
+      // appBar: AppBar(
+      //   // leading: Icon(Icons.menu),
+      //   title: Text('Image Display',
+      //   style: TextStyle(
+      //     color: Colors.white,
+      //   ),
+      //   ),
+      //   backgroundColor: Colors.orange,
+      //   actions: <Widget>
+      //   [
+      //     PopupMenuButton<int>(
+      //       color: Colors.white,
+      //     itemBuilder: (context) => [
+      //           PopupMenuItem(
+      //             value: 1,
+      //             child: Row(
+      //               mainAxisAlignment: MainAxisAlignment.center,
+      //             children: <Widget>
+      //             [ 
+      //               Icon(
+      //                 Icons.power,
+      //                 color:Colors.black
+      //               ),
+      //               FlatButton(
+      //                 onPressed: ()
+      //                 {
+      //                     sharedPreferences.clear();
+      //                     sharedPreferences.commit();
+      //                     Navigator.of(context).pushAndRemoveUntil(MaterialPageRoute(builder:(BuildContext context) => LoginScreen()), (Route<dynamic> route) => false);
+      //                 },
+      //                 child: Text(
+      //                   "LogOut",
+      //                   style: TextStyle(
+      //                     color: Colors.black,
+      //                   ),              
+      //                 ),
+      //               ),
+      //             ]
+      //             ),
+      //           ),
+      //           PopupMenuItem(
+      //             value: 2,
+      //             child: Row(
+      //               mainAxisAlignment: MainAxisAlignment.center,
+      //             children: <Widget>
+      //             [ 
+      //               Icon(
+      //                 Icons.book,
+      //                 color:Colors.black
+      //               ),
+      //               FlatButton(
+      //                 onPressed: ()
+      //                 {
+      //                     Navigator.pushNamed(context, 'personal_information');
+      //                 },
+      //                 child: Text(
+      //                   "Personal Information",
+      //                   style: TextStyle(
+      //                     color: Colors.black,
+      //                   ),              
+      //                 ),
+      //               ),
+      //             ]
+      //             ),
+      //           ),
+      //           PopupMenuItem(
+      //             value: 2,
+      //             child: Row(
+      //               mainAxisAlignment: MainAxisAlignment.center,
+      //             children: <Widget>
+      //             [ 
+      //               Icon(
+      //                 Icons.image,
+      //                 color:Colors.black
+      //               ),
+      //               FlatButton(
+      //                 onPressed: ()
+      //                 {
+      //                     Navigator.push(context, MaterialPageRoute(builder: (context) 
+      //                     {
+      //                       return SavedImageScreen();
+      //                     }));
+      //                 },
+      //                 child: Text(
+      //                   "Saved Images",
+      //                   style: TextStyle(
+      //                     color: Colors.black,
+      //                   ),              
+      //                 ),
+      //               ),
+      //             ]
+      //             ),
+      //           ),
+      //         ],
+      //     icon: Icon(Icons.more_vert),
+      //     offset: Offset(0, 100),
+      //   )
+      //   ],
+      // ),
       body: Container(
         height: MediaQuery.of(context).size.height / 1,
         color: Colors.grey[300],

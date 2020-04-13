@@ -433,7 +433,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
     var envelope = new Envelope()
     ..from = username
-    ..fromName = 'MegaBrain'
+    ..fromName = 'MegaBrain ENEM'
     ..recipients = [receipientEmail]
     ..subject = 'Verify Account'
     ..text = 'You have been registered successfully at MegaBrain.\nEmail Verification Code: $verifyToken\nEnter this code in your app to verify your account.\n\n\nDisclaimer: If you did not sign up. You can safely disregard this email.'; 

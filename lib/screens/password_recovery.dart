@@ -135,7 +135,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
 
     var envelope = new Envelope()
     ..from = username
-    ..fromName = 'MegaBrain'
+    ..fromName = 'MegaBrain ENEM'
     ..recipients = [receipientEmail]
     ..subject = 'Password Recovery'
     ..text = 'We have received Password Reset Request for your account.\nPassword Recovery Verification Code: $token\nEnter this code in your app to reset your account password.\n\n\nDisclaimer: If you did not initiate password recovery process. You can safely disregard this email.';

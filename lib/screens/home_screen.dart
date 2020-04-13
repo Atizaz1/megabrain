@@ -160,6 +160,8 @@ class _HomeScreenState extends State<HomeScreen>
     }
   }
 
+  
+
   fetchSubjectList() async 
   {
     setState(() 
@@ -355,61 +357,21 @@ class _HomeScreenState extends State<HomeScreen>
                 height: 1.0,
                 color: Colors.grey,
               ),
-              Card(
-                  color:Colors.grey[100],
-                  child: ListTile(
-                  // contentPadding: EdgeInsets.zero,
-                  leading: Image.asset('images/news.png',
-                  width: 55.0,),
-                  title: Text('News',
-                  style: TextStyle(
-                    color: Colors.black,
-                    // fontSize: 20.0,
-                  ),
-                  ),
-                  onTap: () {
-
-                    // Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) 
-                      {
-                        return NewsScreen();
-                      }));
-                  },
-                ),
-              ),
-
-              Card(
-                  color:Colors.grey[100],
-                  child: ListTile(
-                  // contentPadding: EdgeInsets.zero,
-                  leading: Image.asset('images/saved-images.png',
-                  width: 55.0,),
-                  title: Text('Saved Images',
-                  style: TextStyle(
-                    color: Colors.black,
-                    // fontWeight: FontWeight.bold,
-                    // fontSize: 20.0,
-                  ),
-                  ),
-                  onTap: () {
-
-                    // Navigator.pop(context);
-                    Navigator.push(context, MaterialPageRoute(builder: (context) 
-                      {
-                        return SavedImageScreen();
-                      }));
-                  },
-                ),
-              ),
+              
               
               _isLoading ? 
                Center(child: CircularProgressIndicator(
                   backgroundColor: Colors.orange[500],
                 )): 
                 Container(
-                  height: double.maxFinite,
+                  height: MediaQuery.of(context).size.height/2.6,
                   child: ListView.builder(
-                    padding: EdgeInsets.zero,
+                // shrinkWrap: true,
+                // gridDelegate:
+                // SliverGridDelegateWithFixedCrossAxisCount(
+                //                    crossAxisCount: 1,
+                //                    childAspectRatio:  (MediaQuery.of(context).size.width/2) / ((MediaQuery.of(context).size.height - kToolbarHeight - 600) / 2) 
+                // ),
                     // shrinkWrap: ,
                       itemCount: (subjectList == null || subjectList.length == 0) ? 0 : subjectList.length,
                       itemBuilder: (context, index) 
@@ -480,6 +442,53 @@ class _HomeScreenState extends State<HomeScreen>
                     // }, ),
               ),
                 ),
+                Card(
+                  color:Colors.grey[100],
+                  child: ListTile(
+                  // contentPadding: EdgeInsets.zero,
+                  leading: Image.asset('images/news.png',
+                  width: 55.0,),
+                  title: Text('News',
+                  style: TextStyle(
+                    color: Colors.black,
+                    // fontSize: 20.0,
+                  ),
+                  ),
+                  onTap: () {
+
+                    // Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                        return NewsScreen();
+                      }));
+                  },
+                ),
+              ),
+
+              Card(
+                  color:Colors.grey[100],
+                  child: ListTile(
+                  // contentPadding: EdgeInsets.zero,
+                  leading: Image.asset('images/saved-images.png',
+                  width: 55.0,),
+                  title: Text('Saved Images',
+                  style: TextStyle(
+                    color: Colors.black,
+                    // fontWeight: FontWeight.bold,
+                    // fontSize: 20.0,
+                  ),
+                  ),
+                  onTap: () {
+
+                    // Navigator.pop(context);
+                    Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      {
+                        return SavedImageScreen();
+                      }));
+                  },
+                ),
+              ),
+                
               // ListTile(
               //   contentPadding: EdgeInsets.zero,
               //   leading: Image.asset('images/biol.jpg'),
@@ -902,9 +911,11 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               SizedBox(height: 5.0),
               Card(
+                margin: EdgeInsets.symmetric(horizontal:4.0, vertical:0.0),
+
               child: Padding(
                 
-                padding: const EdgeInsets.all(5.0),
+                padding: const EdgeInsets.all(0.0),
                 child: FlatButton(
                   onPressed: (){
                     
@@ -936,9 +947,10 @@ class _HomeScreenState extends State<HomeScreen>
               ),
               SizedBox(height: 5.0),
               Card(
+                margin: EdgeInsets.symmetric(horizontal:4.0, vertical:0.0),
               child: Padding(
                 
-                padding: const EdgeInsets.all(5.0),
+                padding: const EdgeInsets.all(0.0),
                 child: FlatButton(
                   onPressed: (){
                     

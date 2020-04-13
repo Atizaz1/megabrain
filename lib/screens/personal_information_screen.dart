@@ -290,6 +290,36 @@ class _PersonalInformationState extends State<PersonalInformation>
         _selectedState = _dropDownMenuStates[index].value;
       }
     }
+
+    if(_user['city'] != null)
+    {
+      print(_user['city']);
+
+      int index = -1;
+
+      for(var i=0; i<_dropDownMenuCities.length; i++ )
+      {  
+        String mainString = _dropDownMenuCities[i].child.toString();
+
+        // print(mainString);
+
+        String substr = mainString.substring(6,mainString.length-2);
+
+        print(substr);
+        
+        if(substr == _user['city'])
+        {
+          index = i;
+          break;
+        }
+
+      }
+      
+      if(index >= 0)
+      {        
+        _selectedCity = _dropDownMenuCities[index].value;
+      }
+    }
   }
  
   chooseImage() 
@@ -896,7 +926,8 @@ class _PersonalInformationState extends State<PersonalInformation>
     await checkLoginStatus();
     await fetchUserData();
     await fetchStateList();
-    await fetchCityList2();
+    // await fetchCityList2();
+    await fetchCityList(_user['state']);
     setUserData();
   }
 
