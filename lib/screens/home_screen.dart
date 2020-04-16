@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_facebook_login/flutter_facebook_login.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:megabrain/screens/saved_images_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:megabrain/screens/login_screen.dart';
@@ -364,7 +365,9 @@ class _HomeScreenState extends State<HomeScreen>
                   backgroundColor: Colors.orange[500],
                 )): 
                 Container(
-                  height: MediaQuery.of(context).size.height/2.6,
+                  margin: EdgeInsets.zero,
+                  padding: EdgeInsets.zero,
+                  height: MediaQuery.of(context).size.height/2.45,
                   child: ListView.builder(
                 // shrinkWrap: true,
                 // gridDelegate:
@@ -384,6 +387,7 @@ class _HomeScreenState extends State<HomeScreen>
                             }));
                           },
                           child: Card(
+                            margin: EdgeInsets.symmetric(vertical:4.0,horizontal: 0.0),
                             color: Colors.grey[100],
                               child: ListTile(
                                 leading: Image.asset(

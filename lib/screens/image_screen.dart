@@ -197,6 +197,8 @@ class _ImageScreenState extends State<ImageScreen>
 
       print(imagesLinkList.first);
 
+      Fluttertoast.showToast(msg: 'Remember: Long Tap to Save/Delete Images', toastLength: Toast.LENGTH_LONG);
+
     }
     else
     {
@@ -220,7 +222,7 @@ class _ImageScreenState extends State<ImageScreen>
     {
       return AlertDialog(
         title: Text('Save Image'),
-        content: Text('Do you want to save this photo?'),
+        content: Text('Do you want to save this Image?'),
         actions: <Widget>[
           RaisedButton(
             onPressed: () 
@@ -240,7 +242,75 @@ class _ImageScreenState extends State<ImageScreen>
     });
   }
 
-  saveImage(String imgLink) async 
+  void showDeletePrompt(String imgLink) 
+   {
+    showDialog(
+    context: context,
+    builder: (BuildContext context) 
+    {
+      return AlertDialog(
+        title: Text('Delete Image'),
+        content: Text('Do you want to remove this Image from Saved Images?'),
+        actions: <Widget>[
+          RaisedButton(
+            onPressed: () 
+            {
+              deleteImage(imgLink);
+              Navigator.pop(context);
+            },
+            child: Text('Yes'),
+          ),
+          RaisedButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('No'),
+          ),
+        ],
+      );
+      
+    });
+  }
+
+  deleteImage(String imgLink) async 
+  {
+    int check = await dbHelper.deleteByLink(imgLink);
+
+    print("check");
+
+    print(check);
+
+    if(check > 0)
+    {
+      Fluttertoast.showToast(msg: 'Image has been deleted Successfully');
+      setState(() {
+        _isLoading = true;
+      });
+      setState(() {
+        _isLoading = false;
+      });
+    }
+    else
+    {
+      Fluttertoast.showToast(msg: 'Image has already been deleted');
+    }
+  }
+
+  void saveImage(String imgLink) async
+  {
+    var imageLink = new ImageLink(imgLink, sharedPreferences.getInt('logged_in_user_id'));
+
+    ImageLink imglnk = await dbHelper.create(imageLink);
+
+    if(imglnk != null)
+    {
+      Fluttertoast.showToast(msg: 'Image has been saved Successfully');
+    }
+    else
+    {
+      Fluttertoast.showToast(msg: 'We are having trouble with saving image. Please try again after sometime.');
+    }
+  }
+
+  checkImage(String imgLink) async 
   {
     int check = await dbHelper.findIfExistsByUser(imgLink, sharedPreferences.getInt('logged_in_user_id').toString());
 
@@ -250,23 +320,12 @@ class _ImageScreenState extends State<ImageScreen>
 
     if(check <= 0)
     {
-      
-      var imageLink = new ImageLink(imgLink, sharedPreferences.getInt('logged_in_user_id'));
-
-      ImageLink imglnk = await dbHelper.create(imageLink);
-
-      if(imglnk != null)
-      {
-        Fluttertoast.showToast(msg: 'Image has been saved Successfully');
-      }
-      else
-      {
-        Fluttertoast.showToast(msg: 'We are having trouble with saving image. Please try again after sometime.');
-      }
+      showSavePrompt(imgLink);
     }
-    else
+    else if(check > 0)
     {
-      Fluttertoast.showToast(msg: 'Image has already been saved');
+      Fluttertoast.showToast(msg: 'Image has already been saved. ');
+      showDeletePrompt(imgLink);
     }
   }
 
@@ -274,9 +333,10 @@ class _ImageScreenState extends State<ImageScreen>
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('$topic_n Images',
+        title: Text('$ss_name \n$area_name \n$topic_n',
         style: TextStyle(
           color: Colors.white,
+          fontSize: 12.5
         ),
         ),
         backgroundColor: Colors.orange,
@@ -363,7 +423,7 @@ class _ImageScreenState extends State<ImageScreen>
                   return GestureDetector(
                     onLongPress: () async
                     {                      
-                      showSavePrompt(imagesLinkList[index]);
+                      checkImage(imagesLinkList[index]);
                     },
                     onTap: () 
                     {

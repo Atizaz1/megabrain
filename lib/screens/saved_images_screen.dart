@@ -59,7 +59,6 @@ class _SavedImageScreenState extends State<SavedImageScreen>
     dbHelper = new DBHelper();
 
     await fetchSavedImages();
-    
   }
 
   fetchSavedImages() async
@@ -76,6 +75,8 @@ class _SavedImageScreenState extends State<SavedImageScreen>
       }
 
       print(savedImagesList);
+
+      Fluttertoast.showToast(msg: 'Remember: Long Tap to Delete Images', toastLength: Toast.LENGTH_LONG);
     }
     
     setState(() 
@@ -92,7 +93,7 @@ class _SavedImageScreenState extends State<SavedImageScreen>
     {
       return AlertDialog(
         title: Text('Delete Image'),
-        content: Text('Do you want to delete this photo?'),
+        content: Text('Do you want to remove this Image from Saved Images?'),
         actions: <Widget>[
           RaisedButton(
             onPressed: () 
@@ -233,7 +234,7 @@ class _SavedImageScreenState extends State<SavedImageScreen>
                     },
                     onTap: () 
                     {
-                      Navigator.push(context, MaterialPageRoute(builder: (context) 
+                      Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) 
                       {
                         return SoloImageScreen(imageLink: savedImagesList[index]);
                       }));

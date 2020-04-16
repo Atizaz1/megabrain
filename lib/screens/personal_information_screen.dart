@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:fluttertoast/fluttertoast.dart';
@@ -320,6 +321,14 @@ class _PersonalInformationState extends State<PersonalInformation>
         _selectedCity = _dropDownMenuCities[index].value;
       }
     }
+
+    if(_user['photo'] != 'user.png')
+    {
+      print(_user['photo']);
+      String tempPhotoName = _user['photo'];
+      fetchedImageLink = 'http://megabrain-enem.com.br/API/$tempPhotoName';
+      print(fetchedImageLink);
+    }
   }
  
   chooseImage() 
@@ -328,6 +337,19 @@ class _PersonalInformationState extends State<PersonalInformation>
     {
       file = ImagePicker.pickImage(source: ImageSource.gallery);
     });
+  }
+
+  String fetchedImageLink;
+
+  Widget showFetchedImage()
+  {
+    return CachedNetworkImage(
+      width: 300,
+      height: 300,
+      imageUrl: fetchedImageLink,
+      placeholder: (context, url)        => CircularProgressIndicator(),
+      errorWidget: (context, url, error) => Icon(Icons.error),
+    );
   }
 
   Widget showImage() {
@@ -1007,6 +1029,7 @@ class _PersonalInformationState extends State<PersonalInformation>
 
         ],
       ),
+      resizeToAvoidBottomPadding: true,
            body: Builder(
             builder: (context) => Padding(
               padding: EdgeInsets.symmetric(horizontal: 24.0),
@@ -1302,7 +1325,7 @@ class _PersonalInformationState extends State<PersonalInformation>
                                   ),
                             ),
                             Center(
-                              child:showImage()
+                              child: fetchedImageLink != null && file == null ? showFetchedImage() : showImage()
                             ),
                             SizedBox(
                               height: 15.0,

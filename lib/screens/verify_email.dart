@@ -4,6 +4,8 @@ import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
 import 'package:fluttertoast/fluttertoast.dart';
 
+import 'login_screen.dart';
+
 
 class EmailVerify extends StatefulWidget 
 {
@@ -82,6 +84,11 @@ class _EmailVerifyState extends State<EmailVerify>
       print(jsonData);
 
       Fluttertoast.showToast(msg: 'Your Account has been verfied successfully. You can now Log In');
+
+      Navigator.push(context, MaterialPageRoute(builder: (context)
+      {
+        return LoginScreen();
+      }));
 
     }
     else

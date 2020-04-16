@@ -241,6 +241,7 @@ class _PasswordVerifyState extends State<PasswordVerify>
                       ),
                       SizedBox(height: 45.0),
                       TextFormField(
+                        keyboardType: TextInputType.emailAddress,
                         validator: (value) 
                         {
                                 if (value.isEmpty) 
