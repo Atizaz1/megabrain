@@ -169,6 +169,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
   bool _isLoading = false;
 
+  bool _isLoading2 = false;
+
   var jsonData;
 
   var response;
@@ -291,7 +293,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   {
     setState(() 
     {
-      _isLoading = true;
+      _isLoading2 = true;
     });
     // String token = sharedPreferences.get('token');
 
@@ -311,7 +313,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
       setState(() 
       {
-        _isLoading = false;
+        _isLoading2 = false;
       });
 
       _cities = jsonCityData;
@@ -327,7 +329,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     {
       setState(()
       {
-        _isLoading = false;
+        _isLoading2 = false;
       });
       
       print(jsonCityData);
@@ -1292,7 +1294,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
 
                                 },
                               ),
-                            DropdownButton(
+                            _isLoading2 ? Center(
+                              child:CircularProgressIndicator(strokeWidth: 2.0,)): DropdownButton(
                               value: _selectedCity,
                               items: _dropDownMenuCities,
                               onChanged: changedDropDownCity,

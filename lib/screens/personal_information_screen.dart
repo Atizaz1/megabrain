@@ -145,6 +145,8 @@ class _PersonalInformationState extends State<PersonalInformation>
 
   bool _isLoading = false;
 
+  bool _isLoading2 = false;
+
   var jsonData;
 
   var response;
@@ -633,7 +635,7 @@ class _PersonalInformationState extends State<PersonalInformation>
   {
     setState(() 
     {
-      _isLoading = true;
+      _isLoading2 = true;
     });
     // String token = sharedPreferences.get('token');
 
@@ -653,7 +655,7 @@ class _PersonalInformationState extends State<PersonalInformation>
 
       setState(() 
       {
-        _isLoading = false;
+        _isLoading2 = false;
       });
 
       _cities = jsonCityData;
@@ -669,7 +671,7 @@ class _PersonalInformationState extends State<PersonalInformation>
     {
       setState(()
       {
-        _isLoading = false;
+        _isLoading2 = false;
       });
       
       print(jsonCityData);
@@ -1393,7 +1395,8 @@ class _PersonalInformationState extends State<PersonalInformation>
 
                                 },
                               ),
-                            DropdownButton(
+                            _isLoading2 ? Center(
+                              child:CircularProgressIndicator(strokeWidth: 2.0,)): DropdownButton(
                               value: _selectedCity,
                               items: _dropDownMenuCities,
                               onChanged: changedDropDownCity,
