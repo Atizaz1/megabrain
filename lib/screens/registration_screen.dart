@@ -903,6 +903,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     }
   }
 
+  final FocusNode _confirmPasswordFieldFocus = new FocusNode();
+  final FocusNode _courseFieldFocus = new FocusNode();
 
   @override
   Widget build(BuildContext context) {
@@ -981,6 +983,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           {
                              _nickname = value;
                           },
+                          textInputAction: TextInputAction.next,
+                          autofocus: true,
+                          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                           controller: nicknameController,
                           decoration: InputDecoration(
                               contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -991,6 +996,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                          textInputAction: TextInputAction.next,
                           validator: (value) 
                           {
                               if (value.isEmpty) 
@@ -1019,6 +1026,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
+                          textInputAction: TextInputAction.next,
                           keyboardType: TextInputType.emailAddress,
                           onSaved: (value)
                           {
@@ -1049,6 +1058,8 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_confirmPasswordFieldFocus),
+                          textInputAction: TextInputAction.next,
                           onSaved: (value)
                           {
                              _password = value;
@@ -1088,6 +1099,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          focusNode: _confirmPasswordFieldFocus,
+                          onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_courseFieldFocus),
+                          textInputAction: TextInputAction.next,
                           onSaved: (value){
                              _confirm_password = value;
                           },
@@ -1126,6 +1140,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          focusNode: _courseFieldFocus,
                           onSaved: (value){
                              _course = value;
                           },

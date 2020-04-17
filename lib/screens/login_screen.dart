@@ -246,6 +246,7 @@ class _LoginScreenState extends State<LoginScreen>
                       ),
                       SizedBox(height: 25.0),
                       TextFormField(
+                        keyboardType: TextInputType.emailAddress,
                         validator: (value) 
                         {
                                 if (value.isEmpty) 

@@ -955,6 +955,9 @@ class _PersonalInformationState extends State<PersonalInformation>
     setUserData();
   }
 
+  final FocusNode _confirmPasswordFieldFocus = new FocusNode();
+  final FocusNode _courseFieldFocus = new FocusNode();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -1075,6 +1078,8 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 35.0),
                         TextFormField(
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                           validator: (value) {
                               if (value.isEmpty) 
                               {
@@ -1102,6 +1107,8 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                           validator: (value) {
                               if (value.isEmpty) 
                               {
@@ -1129,6 +1136,8 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => FocusScope.of(context).nextFocus(),
                           keyboardType: TextInputType.emailAddress,
                           onSaved: (value)
                           {
@@ -1159,6 +1168,8 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_confirmPasswordFieldFocus),
                           onSaved: (value)
                           {
                              _password = value;
@@ -1194,6 +1205,9 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          focusNode: _confirmPasswordFieldFocus,
+                          textInputAction: TextInputAction.next,
+                          onFieldSubmitted: (_) => FocusScope.of(context).requestFocus(_courseFieldFocus),
                           onSaved: (value){
                              _confirm_password = value;
                           },
@@ -1228,6 +1242,7 @@ class _PersonalInformationState extends State<PersonalInformation>
                         ),
                         SizedBox(height: 15.0),
                         TextFormField(
+                          focusNode: _courseFieldFocus,
                           onSaved: (value){
                              _course = value;
                           },

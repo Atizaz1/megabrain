@@ -367,7 +367,7 @@ class _HomeScreenState extends State<HomeScreen>
                 Container(
                   margin: EdgeInsets.zero,
                   padding: EdgeInsets.zero,
-                  height: MediaQuery.of(context).size.height/2.45,
+                  height: MediaQuery.of(context).size.height/2,
                   child: ListView.builder(
                 // shrinkWrap: true,
                 // gridDelegate:
