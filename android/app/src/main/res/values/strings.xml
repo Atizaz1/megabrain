@@ -3,6 +3,6 @@
 
     <string name="app_name">megabrain</string>
     <string name="facebook_app_id">552716122046137</string>
-    <string name="fb_login_protocol_scheme">00000</string>
+    <string name="fb_login_protocol_scheme">fb552716122046137</string>
 
 </resources>
