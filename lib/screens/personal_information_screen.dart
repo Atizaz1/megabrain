@@ -852,9 +852,9 @@ class _PersonalInformationState extends State<PersonalInformation>
       }
       else
       {
-        if( (_password.isNotEmpty && _confirm_password.isNotEmpty) && (_password == _confirm_password) || (_password.isEmpty && _confirm_password.isEmpty) )
+        if( (passwordController.text.isNotEmpty && confirmPasswordController.text.isNotEmpty) && (passwordController.text == confirmPasswordController.text) || (passwordController.text.isEmpty && passwordController.text.isEmpty) )
         {
-          await updateUserProfile(_password,_confirm_password,_radioValue1, _course, _borndate);
+          await updateUserProfile(passwordController.text,confirmPasswordController.text,_radioValue1, _course, _borndate);
           
           if(response.statusCode  == 200) 
           {
