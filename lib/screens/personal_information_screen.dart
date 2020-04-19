@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_typeahead/flutter_typeahead.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
+import 'package:megabrain/screens/home_screen.dart';
 import 'package:rflutter_alert/rflutter_alert.dart';
 import 'dart:convert' as convert;
 import 'package:http/http.dart' as http;
@@ -859,6 +860,10 @@ class _PersonalInformationState extends State<PersonalInformation>
           if(response.statusCode  == 200) 
           {
             setUserData();
+            Navigator.pushReplacement(context, MaterialPageRoute(builder: (context)
+            {
+              return HomeScreen();
+            }));
           }
           else if(response.statusCode == 422)
           {
