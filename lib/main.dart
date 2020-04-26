@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:megabrain/screens/password_recovery.dart';
 import 'package:megabrain/screens/personal_information_screen.dart';
+import 'package:megabrain/screens/splash_screen.dart';
 import 'package:megabrain/screens/welcome_screen.dart';
 import 'package:megabrain/screens/login_screen.dart';
 import 'package:megabrain/screens/registration_screen.dart';
@@ -18,8 +19,9 @@ class MegaBrain extends StatelessWidget
           body1: TextStyle(color: Colors.grey[100]),
         ),
       ),
-      initialRoute: 'welcome_screen',
+      initialRoute: 'splash_screen',
       routes: {
+        'splash_screen'          : (context) => SplashScreen(),
         'welcome_screen'         : (context) => WelcomeScreen(),
         'login_screen'           : (context) => LoginScreen(), 
         'registration_screen'    : (context) => RegistrationScreen(), 
